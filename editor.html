@@ -45,9 +45,10 @@
   </div>
 </div>
 
-<script src="./node_modules/monaco-editor/min/vs/loader.js"></script>
+<!-- UMD libs must load before Monaco's AMD loader, or they register as AMD modules instead of globals -->
 <script src="./node_modules/marked/lib/marked.umd.js"></script>
 <script src="./node_modules/dompurify/dist/purify.min.js"></script>
+<script src="./node_modules/monaco-editor/min/vs/loader.js"></script>
 <script>
 (async function () {
   const params = new URLSearchParams(location.search);
@@ -58,7 +59,7 @@
   const ext = (name.split('.').pop() || '').toLowerCase();
 
   let text;
-  try { text = await api.read(filePath); }
+  try { text = await api.read(); }
   catch (e) { document.getElementById('root').innerHTML = '<div id="msg">読み込めませんでした: ' + String(e.message || e) + '</div>'; return; }
 
   self.MonacoEnvironment = {
@@ -87,7 +88,7 @@
     setTitle();
     async function save() {
       const v = model.getValue();
-      try { await api.write(filePath, v); saved = v; setTitle(); }
+      try { await api.write(v); saved = v; setTitle(); }
       catch (e) { alert('保存できませんでした: ' + (e.message || e)); }
     }
     document.getElementById('savebtn').onclick = save;

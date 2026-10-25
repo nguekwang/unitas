@@ -40,6 +40,7 @@
 const $ = id => document.getElementById(id);
 const ICON = { web:'🌐', pdf:'📕', html:'🧩', image:'🖼', editor:'📝', start:'✦' };
 let state = { tabs: [], activeId: null };
+let shownId = null;
 
 function render() {
   const el = $('tabs');
@@ -65,10 +66,12 @@ function render() {
   el.appendChild(plus);
 
   const a = state.tabs.find(t => t.id === state.activeId);
+  // switching tabs discards whatever was being typed into the address bar
+  if (state.activeId !== shownId) { shownId = state.activeId; $('addr').blur(); }
   if (document.activeElement !== $('addr')) $('addr').value = a ? a.addr : '';
   $('back').disabled = !state.canBack;
   $('fwd').disabled = !state.canForward;
-  $('edit').disabled = !(a && a.file && a.kind !== 'editor');
+  $('edit').disabled = !(a && a.editable);
 }
 
 shellApi.onTabs(s => { state = s; render(); });

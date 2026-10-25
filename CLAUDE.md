@@ -5,19 +5,16 @@ Arch Linux 上で動く、Chromium(Electron) ベースの「全部入りタブ�
 ブラウザ / エディタ / PDF・MD・HTML ビューアを1ウィンドウに統合し、さらに
 **Claude Agent SDK で VS Code 拡張版 Claude Code と同等の UI/UX** を組み込む。IaC も扱えるようにする。
 
-## 現状（最小版・未実行）
+## 現状（段階1完了: 起動確認済み）
 - `main.js` … `WebContentsView` でタブ管理。入力を URL/PDF/HTML/画像/MD・テキストに振り分け
 - `shell.html` + `shell-preload.js` … タブバー・アドレスバー
 - `editor.html` + `editor-preload.js` … Monaco (AMD, v0.52.2) + marked + DOMPurify。MD は左右分割ライブプレビュー
 - `start.html` … 新規タブ
-- ⚠ **一度も起動していない**。作成環境が npm に接続できず `npm install` 未実施。構文チェック(`node --check`)のみ通過済み
-
-## 最初にやること
-1. `npm install && npm start` で起動確認。特に以下を実機で検証:
-   - Monaco の AMD ローダが `file://` で読めるか（ワーカーは data: URL 経由）
-   - `WebContentsView` 内で Chromium 内蔵 PDF ビューアが出るか
-   - ショートカット（`before-input-event`）が各ビュー内でも効くか
-2. 壊れていたら直す。`README.md` に仕様あり
+- Electron 45 + Xvfb で起動確認済み: Monaco(ワーカー含む)、内蔵PDFビューア、MD分割、全ショートカット（PDFビューア内フォーカス時も）
+- 注意点（ハマりどころ）:
+  - marked / DOMPurify は Monaco の `loader.js` より**前**に読む（後だと AMD モジュールとして登録されグローバルが無くなる）
+  - `file:read/write` は呼び出し元 editor タブ自身のファイルに限定（パス引数なし）。editor タブは `will-navigate` を禁止
+  - 許可フォルダ（プロジェクトフォルダ）は段階3で Claude 用に導入予定
 
 ## 次のタスク
 

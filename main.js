@@ -36,6 +36,8 @@ function classify(raw) {
 
 // ---------- tabs ----------
 function activeTab() { return tabs.find(t => t.id === activeId); }
+// PDF and raster images are binary; only text-based viewers can be opened in the editor
+function canEdit(t) { return !!(t && t.file && (t.kind === 'html' || /\.svg$/i.test(t.file))); }
 
 function layout() {
   const t = activeTab();
@@ -52,7 +54,7 @@ function pushState() {
     activeId,
     canBack: !!(nh && nh.canGoBack()),
     canForward: !!(nh && nh.canGoForward()),
-    tabs: tabs.map(x => ({ id: x.id, kind: x.kind, title: x.title, addr: x.file || x.url || '', file: x.file || null }))
+    tabs: tabs.map(x => ({ id: x.id, kind: x.kind, title: x.title, addr: x.file || x.url || '', file: x.file || null, editable: canEdit(x) }))
   });
 }
 
@@ -88,6 +90,8 @@ function createTab(raw, opts = {}) {
   wc.on('did-navigate-in-page', (_e, url) => { if (tab.kind === 'web') tab.url = url; pushState(); });
   wc.setWindowOpenHandler(({ url }) => { createTab(url); return { action: 'deny' }; });
   attachShortcuts(wc);
+  // The editor preload exposes file IO, so an editor tab must never navigate away (e.g. on drag & drop)
+  if (c.kind === 'editor') wc.on('will-navigate', e => e.preventDefault());
 
   if (c.kind === 'start') { tab.title = 'New Tab'; wc.loadFile(path.join(__dirname, 'start.html')); }
   else if (c.kind === 'editor') wc.loadFile(path.join(__dirname, 'editor.html'), { query: { file: c.file, url: pathToFileURL(c.file).href } });
@@ -122,7 +126,7 @@ async function openDialog() {
 
 function editCurrent() {
   const t = activeTab();
-  if (t && t.file && t.kind !== 'editor') createTab(t.file, { edit: true });
+  if (canEdit(t)) createTab(t.file, { edit: true });
 }
 
 // ---------- shortcuts (work even when focus is inside a page) ----------
@@ -165,8 +169,14 @@ ipcMain.on('nav', (_e, action) => {
   else if (action === 'forward' && wc.navigationHistory.canGoForward()) wc.navigationHistory.goForward();
   else if (action === 'reload' && t.kind !== 'editor') wc.reload();
 });
-ipcMain.handle('file:read', (_e, p) => fs.promises.readFile(p, 'utf8'));
-ipcMain.handle('file:write', (_e, p, text) => fs.promises.writeFile(p, text, 'utf8'));
+// File IO is bound to the calling editor tab: it can only read/write the file it was opened with.
+function editorFile(e) {
+  const t = tabs.find(x => x.view.webContents === e.sender);
+  if (!t || t.kind !== 'editor' || !t.file) throw new Error('file access denied');
+  return t.file;
+}
+ipcMain.handle('file:read', e => fs.promises.readFile(editorFile(e), 'utf8'));
+ipcMain.handle('file:write', (e, text) => fs.promises.writeFile(editorFile(e), String(text), 'utf8'));
 
 // ---------- app ----------
 function createWindow() {
