@@ -1,0 +1,10 @@
+[Desktop Entry]
+Type=Application
+Name=Unitas
+Comment=Browser, editor and PDF/Markdown/HTML viewer in one tabbed window
+Exec=unitas %F
+Icon=unitas
+Terminal=false
+Categories=Utility;TextEditor;Development;
+MimeType=text/plain;text/markdown;text/html;application/pdf;
+StartupWMClass=unitas

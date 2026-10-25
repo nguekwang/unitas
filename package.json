@@ -10,8 +10,5 @@
     "dompurify": "^3.2.0",
     "marked": "^15.0.0",
     "monaco-editor": "0.52.2"
-  },
-  "devDependencies": {
-    "electron": "^45.0.0"
   }
 }

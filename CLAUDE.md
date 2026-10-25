@@ -18,7 +18,10 @@ Arch Linux 上で動く、Chromium(Electron) ベースの「全部入りタブ�
 
 ## 次のタスク
 
-### 1. PKGBUILD（Arch）
+### 1. PKGBUILD（Arch）— 作成済み・Arch 実機での makepkg/namcap 未確認
+- `PKGBUILD` はリポジトリ直下。ローカルのチェックアウトから `$startdir` 経由でビルドする
+- Monaco は `min/` だけ使うので `dev/ esm/ min-maps/` は削除（103MB → 17MB）
+- 引数処理は Arch の electron ランチャーがフラグをアプリパスより前に入れても動くようにした（`process.defaultApp`）
 - システムの `electron` パッケージに依存させる（Electron本体を同梱しない）
   - `depends=('electron')`、`makedepends=('npm')`
   - アプリ本体を `/usr/lib/unitas/` に置き、`npm install --omit=dev` した `node_modules` ごと入れる
@@ -33,7 +36,7 @@ Arch Linux 上で動く、Chromium(Electron) ベースの「全部入りタブ�
 - 認証: `claude setup-token` で発行したトークンを環境変数 `CLAUDE_CODE_OAUTH_TOKEN` として SDK に渡す。
   保存は Electron `safeStorage`（Linux では libsecret/kwallet）。平文で設定ファイルに置かない
   - 注意: サブスクのOAuthトークンは個人利用向け。他人に配布するなら API キー(`ANTHROPIC_API_KEY`)方式にする（要・最新の利用規約確認）
-- エージェントの `cwd` は開いているプロジェクトフォルダ。ファイルIOは main 側で許可パスを制限する（現状 `file:read/write` は任意パスなので要絞り込み）
+- エージェントの `cwd` は開いているプロジェクトフォルダ。ファイルIOは main 側で許可パスを制限する
 
 ### 3. IaC 対応
 - Monaco: Terraform/OpenTofu(HCL)、YAML(Ansible/K8s)、Pulumi(TS/Python) のシンタックス・スキーマ補完

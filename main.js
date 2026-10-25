@@ -197,7 +197,9 @@ function createWindow() {
   win.on('leave-full-screen', layout);
   shellWC.loadFile(path.join(__dirname, 'shell.html'));
   shellWC.once('did-finish-load', () => {
-    const args = process.argv.slice(app.isPackaged ? 1 : 2).filter(a => !a.startsWith('-'));
+    // Switches may come before the app path (e.g. flags from electron-flags.conf), so drop them first
+    const args = process.argv.slice(1).filter(a => !a.startsWith('-'));
+    if (process.defaultApp) args.shift(); // the app path in `electron <app> ...`
     if (args.length) args.forEach(a => createTab(a)); else createTab('');
   });
 }

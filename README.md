@@ -2,9 +2,19 @@
 
 Chromium (Electron) 上で、ブラウザ・エディタ・PDF/MD/HTMLビューアを1つのタブ付きウィンドウにまとめたアプリ。
 
-## 起動
+## インストール（Arch Linux）
 
 ```bash
+git clone -b claude/unitas-desktop-app-hy2ak6 https://github.com/nguekwang/unitas.git
+cd unitas
+makepkg -si               # システムの electron を使う。ビルド時に npm でライブラリを取得
+unitas ./note.md
+```
+
+## 開発時の起動
+
+```bash
+sudo pacman -S electron   # Electron 本体はシステム版を使う
 npm install
 npm start                 # 空のタブで起動
 npm start -- ./note.md    # ファイルを指定して起動
