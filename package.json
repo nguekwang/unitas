@@ -1,0 +1,17 @@
+{
+  "name": "unitas",
+  "version": "0.1.0",
+  "description": "Browser + editor + PDF/MD/HTML viewer in one tabbed Chromium (Electron) app",
+  "main": "main.js",
+  "scripts": {
+    "start": "electron ."
+  },
+  "dependencies": {
+    "dompurify": "^3.2.0",
+    "marked": "^15.0.0",
+    "monaco-editor": "0.52.2"
+  },
+  "devDependencies": {
+    "electron": "^33.0.0"
+  }
+}

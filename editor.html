@@ -1,0 +1,132 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<title>Editor</title>
+<style>
+  html, body { height:100%; margin:0; background:#1e1e1e; color:#d4d4d4; overflow:hidden;
+    font: 14px -apple-system, "Segoe UI", "Hiragino Sans", "Noto Sans JP", sans-serif; }
+  #root { display:flex; flex-direction:column; height:100%; }
+  #panes { flex:1; display:flex; min-height:0; }
+  #editor { flex:1; min-width:0; }
+  #preview { flex:1; min-width:0; overflow:auto; padding:20px 32px; border-left:1px solid #333; background:#1e1e1e; display:none; }
+  #preview.on { display:block; }
+  #status { height:24px; display:flex; align-items:center; gap:16px; padding:0 12px; background:#007acc; color:#fff; font-size:12px; }
+  #status .sp { flex:1; }
+  #status .link { cursor:pointer; }
+  #msg { padding:24px; color:#f48771; }
+
+  /* markdown preview */
+  #preview h1, #preview h2 { border-bottom:1px solid #333; padding-bottom:.3em; }
+  #preview h1, #preview h2, #preview h3 { margin:1.4em 0 .6em; line-height:1.3; }
+  #preview a { color:#4aa3ff; }
+  #preview code { background:#2d2d2d; padding:.15em .4em; border-radius:4px; font-family:Consolas, "SF Mono", Menlo, monospace; font-size:.9em; }
+  #preview pre { background:#252526; padding:12px 14px; border-radius:6px; overflow:auto; }
+  #preview pre code { background:none; padding:0; }
+  #preview blockquote { margin:1em 0; padding:0 1em; color:#9a9a9a; border-left:4px solid #444; }
+  #preview table { border-collapse:collapse; }
+  #preview th, #preview td { border:1px solid #444; padding:6px 12px; }
+  #preview img { max-width:100%; }
+  #preview hr { border:0; border-top:1px solid #333; }
+</style>
+</head>
+<body>
+<div id="root">
+  <div id="panes">
+    <div id="editor"></div>
+    <div id="preview"></div>
+  </div>
+  <div id="status">
+    <span id="fname"></span>
+    <span id="lang"></span>
+    <span class="sp"></span>
+    <span id="pvbtn" class="link" style="display:none">プレビュー (Ctrl+P)</span>
+    <span id="savebtn" class="link">保存 (Ctrl+S)</span>
+  </div>
+</div>
+
+<script src="./node_modules/monaco-editor/min/vs/loader.js"></script>
+<script src="./node_modules/marked/lib/marked.umd.js"></script>
+<script src="./node_modules/dompurify/dist/purify.min.js"></script>
+<script>
+(async function () {
+  const params = new URLSearchParams(location.search);
+  const filePath = params.get('file');
+  const fileUrl = params.get('url');
+  const base = location.href.split('?')[0].replace(/\/[^/]*$/, '') + '/node_modules/monaco-editor/min';
+  const name = filePath.split(/[\\/]/).pop();
+  const ext = (name.split('.').pop() || '').toLowerCase();
+
+  let text;
+  try { text = await api.read(filePath); }
+  catch (e) { document.getElementById('root').innerHTML = '<div id="msg">読み込めませんでした: ' + String(e.message || e) + '</div>'; return; }
+
+  self.MonacoEnvironment = {
+    getWorkerUrl: () => 'data:text/javascript;charset=utf-8,' + encodeURIComponent(
+      "self.MonacoEnvironment={baseUrl:'" + base + "/'};importScripts('" + base + "/vs/base/worker/workerMain.js');")
+  };
+  require.config({ paths: { vs: base + '/vs' } });
+
+  require(['vs/editor/editor.main'], function () {
+    const lang = (monaco.languages.getLanguages().find(l => (l.extensions || []).includes('.' + ext)) || { id: 'plaintext' }).id;
+    const model = monaco.editor.createModel(text, lang);
+    const editor = monaco.editor.create(document.getElementById('editor'), {
+      model, theme: 'vs-dark', automaticLayout: true, wordWrap: lang === 'markdown' ? 'on' : 'off',
+      minimap: { enabled: false }, fontSize: 14, scrollBeyondLastLine: false
+    });
+
+    const isMd = lang === 'markdown';
+    const preview = document.getElementById('preview');
+    const pvbtn = document.getElementById('pvbtn');
+    document.getElementById('fname').textContent = filePath;
+    document.getElementById('lang').textContent = lang;
+
+    // --- dirty / save ---
+    let saved = text;
+    const setTitle = () => { document.title = (model.getValue() !== saved ? '● ' : '') + name; };
+    setTitle();
+    async function save() {
+      const v = model.getValue();
+      try { await api.write(filePath, v); saved = v; setTitle(); }
+      catch (e) { alert('保存できませんでした: ' + (e.message || e)); }
+    }
+    document.getElementById('savebtn').onclick = save;
+    editor.addCommand(monaco.KeyMod.CtrlCmd | monaco.KeyCode.KeyS, save);
+
+    // --- markdown preview ---
+    if (isMd) {
+      pvbtn.style.display = '';
+      let timer;
+      const render = () => {
+        const html = DOMPurify.sanitize(marked.parse(model.getValue(), { gfm: true, breaks: false }));
+        preview.innerHTML = html;
+        preview.querySelectorAll('img').forEach(img => {
+          const s = img.getAttribute('src');
+          if (s && !/^[a-z][a-z0-9+.-]*:/i.test(s)) { try { img.src = new URL(s, fileUrl).href; } catch (e) {} }
+        });
+        preview.querySelectorAll('a[href]').forEach(a => { a.target = '_blank'; });
+      };
+      const toggle = () => { preview.classList.toggle('on'); if (preview.classList.contains('on')) render(); };
+      pvbtn.onclick = toggle;
+      editor.addCommand(monaco.KeyMod.CtrlCmd | monaco.KeyCode.KeyP, toggle);
+      model.onDidChangeContent(() => {
+        setTitle();
+        if (!preview.classList.contains('on')) return;
+        clearTimeout(timer); timer = setTimeout(render, 150);
+      });
+      // proportional scroll sync editor -> preview
+      editor.onDidScrollChange(() => {
+        if (!preview.classList.contains('on')) return;
+        const max = editor.getScrollHeight() - editor.getLayoutInfo().height;
+        if (max > 0) preview.scrollTop = (editor.getScrollTop() / max) * (preview.scrollHeight - preview.clientHeight);
+      });
+      preview.classList.add('on'); render(); // split view by default for markdown
+    } else {
+      model.onDidChangeContent(setTitle);
+    }
+    editor.focus();
+  });
+})();
+</script>
+</body>
+</html>
