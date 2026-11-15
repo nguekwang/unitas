@@ -35,6 +35,12 @@ closing the tab kills the shell. Editor and terminal pages share `data-unitas-ap
 not run on a real Arch machine.
 
 **Open threads**
+- Own editor to replace Monaco (user's choice: modeled on Monaco's source, which is in
+  `node_modules/monaco-editor/esm/vs/editor`; scope includes completion and the diff view; Electron stays,
+  see issue #1). Not started: the directory layout is still being discussed. Draft, files at the root:
+  `editor-buffer.js` (piece tree), `editor-model.js` (lines/positions, undo, EOL), `editor-tokenize.js`
+  (Monarch-like highlighting), `editor-view.js` (viewport rendering, scrolling, mouse), `editor-edit.js`
+  (cursor, typing, IME), `editor-find.js`, `editor-suggest.js`, `editor-diff.js`
 - Question to the user, asked in the remote session: Monaco's own Ctrl keys (Ctrl+Z, Ctrl+F) still work in the
   editor. Block them too and use `u` (undo) / `/` (find) in NORMAL mode like vim?
 - Terminal: confirm Shift+Esc as the way out of INSERT; default key for `openTerminal` (none yet); paste into
@@ -59,6 +65,8 @@ not run on a real Arch machine.
 - No Ctrl shortcuts anywhere, and no function keys (F1-F12) in any binding (defaults, `map` lines, handlers);
   nothing may open a separate window (popups, DevTools → tabs/panels)
 - Few directories: only `background/` and `content/`; other files stay at the root
+- File and folder names are always kebab-case (`editor-buffer.js`, not `editor_buffer.js` or `editorBuffer.js`).
+  Existing snake_case files in `background/` and `content/` predate this rule (renaming them: to be decided)
 - j/k = scroll down/up; J = next tab, K = previous tab
 - Commit + push to `main` when asked; leave out `package.json`'s `claude` dependency, `bun.lock` and the
   stray dotfiles in the repo root (`.bashrc`, `.zshrc`, `.mcp.json`, ...), which are not part of the app
