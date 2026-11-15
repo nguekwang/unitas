@@ -13,5 +13,8 @@
     "marked": "^15.0.0",
     "monaco-editor": "0.52.2",
     "node-pty": "^1.1.0"
+  },
+  "allowScripts": {
+    "node-pty@1.1.0": true
   }
 }
