@@ -62,14 +62,8 @@ not run on a real Arch machine.
 
 **User preferences learned this session**
 - Chats in Japanese, but everything in the repo (UI, code comments, docs, commits, PRs) is in English
-- **Key rule (2026-11-15):** every shortcut uses only QWERTY letter keys, `,` `.` `/`, Enter, and Shift with
-  those (so `J`, `G`, `?`, `<`, `>` are fine). Enter as little as possible. Esc is allowed (leave a mode / cancel;
-  Shift+Esc leaves INSERT in a terminal, where Esc goes to the shell). Never F1-F12, Delete, digits,
-  Ctrl, Alt or Super, and never "press twice quickly" gestures (so no `:` `^` `$` `` ` `` `[` `]`, no counts like `5j`). j/k stay scroll keys.
-  Keys should be stateless: one key per command, no sequences like `gg` / `yy` (marks and hint labels, which
-  pick a target, are the exception). Rare commands are run from the status bar instead of getting a key.
-  The default keymap still breaks these
-  rules: redesign pending user approval.
+- **Key bindings: follow @.claude/rules/key-bindings.md** (allowed keys, stateless single keys, no Ctrl/Alt/Super,
+  no F-keys/Delete/digits). The default keymap still breaks these rules: redesign pending user approval.
 - **Screen layout (2026-11-15, qutebrowser-like, not built yet):** one permanent status bar at the bottom
   (mode, pending key, URL / file path, scroll %) that also takes all input: open/commands (`o`) and find (`/`),
   with completions shown above it. No vomnibar overlay, no in-page find bar, no HUD (messages go to the bar).
