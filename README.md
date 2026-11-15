@@ -81,7 +81,7 @@ In the vomnibar, `"<keyword> <terms>"` uses a search engine: `w tokyo` (Wikipedi
 }
 ```
 
-Command names for `map` are listed in `background/all_commands.js`. Ctrl and function-key (F1-F12) mappings are rejected.
+Command names for `map` are listed in `background/all-commands.js`. Ctrl and function-key (F1-F12) mappings are rejected.
 History (`history.json`) and marks (`marks.json`) are kept in the same folder.
 
 ## Terminal
@@ -105,15 +105,15 @@ The structure follows Vimium C: a background part (main process) and a content p
 
 - `main.js` … entry point: window, app lifecycle
 - `background/` … main process (Vimium C `background/`)
-  - `browser.js` tabs · `store.js` shared state · `all_commands.js` commands · `key_mappings.js` default keys + map/unmap
-  - `run_commands.js` runs commands · `run_keys.js` keys in the PDF viewer · `tab_commands.js` · `open_urls.js`
-  - `completion.js` vomnibar suggestions · `normalize_urls.js` typed text → URL/file/search
-  - `browsing_data_manager.js` history · `tools.js` marks · `clipboard.js` · `settings.js` · `ports.js` IPC
-  - `terminal.js` shells for terminal tabs · `vomnibar.js` · `help_dialog.js` · `ui_css.js` · `content_bundle.js` builds and registers the content script
+  - `browser.js` tabs · `store.js` shared state · `all-commands.js` commands · `key-mappings.js` default keys + map/unmap
+  - `run-commands.js` runs commands · `run-keys.js` keys in the PDF viewer · `tab-commands.js` · `open-urls.js`
+  - `completion.js` vomnibar suggestions · `normalize-urls.js` typed text → URL/file/search
+  - `browsing-data-manager.js` history · `tools.js` marks · `clipboard.js` · `settings.js` · `ports.js` IPC
+  - `terminal.js` shells for terminal tabs · `vomnibar.js` · `help-dialog.js` · `ui-css.js` · `content-bundle.js` builds and registers the content script
 - `content/` … content script, run in every page in an isolated world (Vimium C `content/` + `lib/`)
-  - `key_handler.js` modes and key sequences · `insert.js` · `scroller.js` · `link_hints.js` · `local_links.js` · `link_actions.js`
-  - `mode_find.js` · `visual.js` · `marks.js` · `hud.js` · `dom_ui.js` · `help_dialog.js` · `commands.js` · `port.js` · `frontend.js`
-  - `utils.js` · `keyboard_utils.js` · `dom_utils.js`
+  - `key-handler.js` modes and key sequences · `insert.js` · `scroller.js` · `link-hints.js` · `local-links.js` · `link-actions.js`
+  - `mode-find.js` · `visual.js` · `marks.js` · `hud.js` · `dom-ui.js` · `help-dialog.js` · `commands.js` · `port.js` · `frontend.js`
+  - `utils.js` · `keyboard-utils.js` · `dom-utils.js`
 - `shell.html` / `shell-preload.js` … tab strip + mode badge
 - `vomnibar.html` / `vomnibar-preload.js` … the vomnibar overlay
 - `editor.html` / `editor-preload.js` … Monaco + Markdown preview (marked + DOMPurify)

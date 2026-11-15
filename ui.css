@@ -1,5 +1,5 @@
-/* UI drawn inside pages, in the content script's closed shadow root (content/dom_ui.js):
-   link hints, HUD, find bar, help dialog. Sent to each page by background/ui_css.js. */
+/* UI drawn inside pages, in the content script's closed shadow root (content/dom-ui.js):
+   link hints, HUD, find bar, help dialog. Sent to each page by background/ui-css.js. */
 * { box-sizing: border-box; }
 :host, div, span, input, kbd, section, h3, b { font-family: -apple-system, "Segoe UI", "Hiragino Sans", "Noto Sans JP", sans-serif; }
 

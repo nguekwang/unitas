@@ -5,12 +5,12 @@ const { ipcMain } = require('electron');
 const fs = require('fs');
 const store = require('./store');
 const settings = require('./settings');
-const keyMappings = require('./key_mappings');
+const keyMappings = require('./key-mappings');
 const browser = require('./browser');
 const clipboard = require('./clipboard');
-const help = require('./help_dialog');
-const uiCss = require('./ui_css');
-const { COMMANDS } = require('./all_commands');
+const help = require('./help-dialog');
+const uiCss = require('./ui-css');
+const { COMMANDS } = require('./all-commands');
 const { Marks } = require('./tools');
 
 const payload = () => {
@@ -57,7 +57,7 @@ exports.init = () => {
   });
   on('cmd', (t, { name, count }) => {
     // content commands run in the page itself; only background ones are accepted here
-    if (Object.hasOwn(COMMANDS, name) && COMMANDS[name].where === 'background') require('./run_commands').run(name, count, t);
+    if (Object.hasOwn(COMMANDS, name) && COMMANDS[name].where === 'background') require('./run-commands').run(name, count, t);
   });
   on('copy', (t, { text }) => { if (typeof text === 'string' && text.length < 1e6) clipboard.copy(text); });
   on('findQuery', (_t, { query }) => { store.findQuery = String(query || ''); });
@@ -97,7 +97,7 @@ exports.init = () => {
   });
   on('openUrl', (t, { url, newTab }) => {
     if (!/^https?:\/\//i.test(String(url))) return;
-    require('./open_urls').openUrl(String(url), { newTab: !!newTab, tab: t });
+    require('./open-urls').openUrl(String(url), { newTab: !!newTab, tab: t });
   });
   on('marks:set', (t, { name, x, y }) => {
     const ok = Marks.set({ name: String(name), url: t.view.webContents.getURL(), x: Number(x) || 0, y: Number(y) || 0 });

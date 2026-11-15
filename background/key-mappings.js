@@ -1,5 +1,5 @@
 // Default key mappings plus the user's map/unmap lines (cf. Vimium C background/key_mappings.ts).
-const { COMMANDS } = require('./all_commands');
+const { COMMANDS } = require('./all-commands');
 const settings = require('./settings');
 
 // Vimium C's defaults, minus every Ctrl mapping (Unitas has no Ctrl or function-key shortcuts), plus ":" and "e".

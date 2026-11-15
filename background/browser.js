@@ -4,9 +4,9 @@ const os = require('os');
 const path = require('path');
 const { pathToFileURL } = require('url');
 const store = require('./store');
-const { classify } = require('./normalize_urls');
-const history = require('./browsing_data_manager');
-const runKeys = require('./run_keys');
+const { classify } = require('./normalize-urls');
+const history = require('./browsing-data-manager');
+const runKeys = require('./run-keys');
 
 const ROOT = path.join(__dirname, '..');
 const TOP = 36; // height of the tab strip (px)
@@ -82,7 +82,7 @@ exports.createTab = (raw, opts = {}) => {
     webPreferences: {
       contextIsolation: true,
       sandbox: true,
-      // The content script comes from the session (content_bundle.js); editor tabs add file IO,
+      // The content script comes from the session (content-bundle.js); editor tabs add file IO,
       // terminal tabs their shell's input and output
       preload: PRELOAD[c.kind] ? path.join(ROOT, PRELOAD[c.kind]) : undefined
     }

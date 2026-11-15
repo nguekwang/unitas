@@ -1,5 +1,5 @@
 // Every command a key can be mapped to (cf. Vimium C background/all_commands.ts).
-// where: "content" runs inside the page (content/commands.js), "background" runs here (run_commands.js).
+// where: "content" runs inside the page (content/commands.js), "background" runs here (run-commands.js).
 // alias: names accepted on the ":" command line (":w", ":q", ...).
 
 exports.GROUPS = {

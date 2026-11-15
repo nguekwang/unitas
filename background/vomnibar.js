@@ -26,7 +26,7 @@ exports.create = () => {
     const t = browser.activeTab();
     const at = t ? store.tabs.indexOf(t) + 1 : undefined;
     if (run.type === 'tab') browser.activate(run.id);
-    else if (run.type === 'cmd') require('./run_commands').run(String(run.name), 1, t);
+    else if (run.type === 'cmd') require('./run-commands').run(String(run.name), 1, t);
     else if (run.type === 'url' || run.type === 'go') {
       const input = String(run.type === 'url' ? run.url : run.input);
       if (newTab) browser.createTab(input, { index: at }); else browser.go(input);

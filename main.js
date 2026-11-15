@@ -7,8 +7,8 @@ const settings = require('./background/settings');
 const browser = require('./background/browser');
 const ports = require('./background/ports');
 const vomnibar = require('./background/vomnibar');
-const contentBundle = require('./background/content_bundle');
-const history = require('./background/browsing_data_manager');
+const contentBundle = require('./background/content-bundle');
+const history = require('./background/browsing-data-manager');
 const terminal = require('./background/terminal');
 
 // Present a plain Chrome UA: the default includes "unitas/x Electron/x", which

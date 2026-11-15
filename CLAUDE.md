@@ -66,16 +66,17 @@ not run on a real Arch machine.
   nothing may open a separate window (popups, DevTools → tabs/panels)
 - Few directories: only `background/` and `content/`; other files stay at the root
 - File and folder names are always kebab-case (`editor-buffer.js`, not `editor_buffer.js` or `editorBuffer.js`).
-  Existing snake_case files in `background/` and `content/` predate this rule (renaming them: to be decided)
+  All files follow it (renamed 2026-11-15). Exceptions: conventional names (`CLAUDE.md`, `README.md`, `PKGBUILD`).
+  "cf. Vimium C ..." comments keep Vimium C's own snake_case paths
 - j/k = scroll down/up; J = next tab, K = previous tab
 - Commit + push to `main` when asked; leave out `package.json`'s `claude` dependency, `bun.lock` and the
   stray dotfiles in the repo root (`.bashrc`, `.zshrc`, `.mcp.json`, ...), which are not part of the app
 
 ## Current state (stage 1 done: confirmed to launch)
-- `main.js` … entry point; tabs are in `background/browser.js` (`WebContentsView`). Input routing: `background/normalize_urls.js`
+- `main.js` … entry point; tabs are in `background/browser.js` (`WebContentsView`). Input routing: `background/normalize-urls.js`
 - `shell.html` + `shell-preload.js` … tab strip only (no toolbar, no +/× buttons)
 - **Vimium C-style keys, structured like Vimium C** (own code, not imported; Vimium C is Apache-2.0):
-  - `background/` = main process (browser.js tabs, key_mappings, all_commands, run_commands, run_keys, completion, ports, ...)
+  - `background/` = main process (browser.js tabs, key-mappings, all-commands, run-commands, run-keys, completion, ports, ...)
   - `content/` = content script, concatenated at startup into `userData/preload/content.js` and registered with
     `session.defaultSession.registerPreloadScript` (sandboxed preloads can't `require` local files). Runs in every top frame,
     popups included; skips iframes, `shell.html`, `vomnibar.html`, and the PDF viewer
@@ -83,7 +84,7 @@ not run on a real Arch machine.
   - Modes: NORMAL (only mapped keys are taken) / INSERT (focus-based, or `i`) / VISUAL / HINTS / FIND / MARK. Badge in the tab strip
   - **No Ctrl shortcuts** (user rule): no app menu, Ctrl mappings rejected in settings. Editor save/preview: `:w` / `:p`
   - j/k scroll (not arrow keys): scrollable-element search like Vimium C; Monaco via `unitas:editor-scroll` events;
-    PDF via the viewer frame's `viewer.viewport.setPosition` (background/run_keys.js)
+    PDF via the viewer frame's `viewer.viewport.setPosition` (background/run-keys.js)
   - Find uses `webContents.findInPage`; link hints click with real `sendInputEvent` mouse events
   - Settings: `~/.config/unitas/settings.json` (`:settings`), plus history.json, marks.json
 - Popups never open a window: `setWindowOpenHandler` → `createWindow` wraps the popup's `webContents` in a tab, keeping `window.opener` (login popups work). Non-web tabs (editor/viewers) get a plain tab with `deny`
