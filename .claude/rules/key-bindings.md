@@ -12,7 +12,8 @@ or a shell (typing in INSERT mode, Ctrl+C in a terminal) are not bindings and ar
   In a terminal Esc belongs to the shell, so Shift+Esc leaves INSERT there
 
 ## Forbidden
-- Ctrl, Alt, Super (Meta) in any combination
+- Ctrl, Alt, Super (Meta, the Windows key) in any combination, and on their own
+- Space
 - F1-F12, Delete
 - Digits, so no counts like `5j`
 - Brackets of any kind: `(` `)` `[` `]` `{` `}`
