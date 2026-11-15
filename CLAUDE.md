@@ -17,11 +17,10 @@ the page, `f` / `F` / `yf` hints, `gi`, `/` + Enter, `n` `N` with counts (`3n`, 
 vomnibar (`o` `O` `T` `ge` `gE`, Shift+Enter, history, Esc, search keywords `w tokyo` / `aw pacman`), `:q`,
 `:w`, `?`, `:settings` live reload, popups as tabs with `window.opener`, DevTools panel (below).
 
-**DevTools close paths (verified, no uncaught exceptions):** F12 twice, F12 with focus inside DevTools,
-`wc.closeDevTools()`, the DevTools renderer crashing or closing, `x` with the panel open, reload with it open,
+**DevTools close paths (verified, no uncaught exceptions):** toggling twice, `wc.closeDevTools()`, the DevTools renderer crashing or closing, `x` with the panel open, reload with it open,
 quitting with it open. Note: with `setDevToolsWebContents`, Electron 43 reports `isDevToolsOpened()` = false
 and never emits `devtools-closed`, so the panel is tracked through its own webContents (`destroyed`,
-`render-process-gone`); F12 inside the panel is caught with `before-input-event`.
+`render-process-gone`). F12 was removed afterwards (no function-key bindings): `:devtools` only.
 
 **Fixed in the remote session:** find counted the HUD's own text ("/foo 1 / 3") and the find bar's input as
 matches (HUD now draws text with `::before`; the bar's match is subtracted); `2N` / `3n` did one step only
@@ -57,7 +56,8 @@ not run on a real Arch machine.
 
 **User preferences learned this session**
 - Chats in Japanese, but everything in the repo (UI, code comments, docs, commits, PRs) is in English
-- No Ctrl shortcuts anywhere; nothing may open a separate window (popups, DevTools → tabs/panels)
+- No Ctrl shortcuts anywhere, and no function keys (F1-F12) in any binding (defaults, `map` lines, handlers);
+  nothing may open a separate window (popups, DevTools → tabs/panels)
 - Few directories: only `background/` and `content/`; other files stay at the root
 - j/k = scroll down/up; J = next tab, K = previous tab
 - Commit + push to `main` when asked; leave out `package.json`'s `claude` dependency, `bun.lock` and the
@@ -79,7 +79,7 @@ not run on a real Arch machine.
   - Find uses `webContents.findInPage`; link hints click with real `sendInputEvent` mouse events
   - Settings: `~/.config/unitas/settings.json` (`:settings`), plus history.json, marks.json
 - Popups never open a window: `setWindowOpenHandler` → `createWindow` wraps the popup's `webContents` in a tab, keeping `window.opener` (login popups work). Non-web tabs (editor/viewers) get a plain tab with `deny`
-- DevTools: `F12` / `:devtools` → `browser.toggleDevTools`: the DevTools frontend is loaded into our own `WebContentsView` via `setDevToolsWebContents` and docked beside the page (no separate window)
+- DevTools: `:devtools` (no key: function keys are never bound) → `browser.toggleDevTools`: the DevTools frontend is loaded into our own `WebContentsView` via `setDevToolsWebContents` and docked beside the page (no separate window)
 - Chrome extensions: tested LINE and Claude in Chrome (2026-11-15). Electron lacks sidePanel/debugger/tabGroups/nativeMessaging, so Claude in Chrome can't run; LINE might with `electron-chrome-extensions`. User chose to skip extensions for now
 - `editor.html` + `editor-preload.js` … Monaco (AMD, v0.52.2) + marked + DOMPurify. MD gets a left/right split live preview
 - `start.html` … new tab page

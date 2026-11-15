@@ -14,7 +14,6 @@ const tokenOf = input => {
   if (!k) return null;
   if (k.length === 1) return k === ' ' ? '<space>' : k;
   if (NAMED[k]) return `<${input.shift ? 's-' : ''}${NAMED[k]}>`;
-  if (/^F\d+$/.test(k)) return `<${k.toLowerCase()}>`;
   return null;
 };
 const startsWith = (keys, seq) => seq.every((k, i) => keys[i] === k);

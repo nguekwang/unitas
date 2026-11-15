@@ -60,7 +60,7 @@ The mode is shown at the right of the tab strip. Press `?` for every key. Counts
 | `gu` `gU` | Go up the URL / to its root |
 | `e` | Edit the file being viewed (HTML etc.) |
 | `:term` | Terminal tab (see below) |
-| `F12` / `:devtools` | Developer tools for this tab, docked inside the window (right, or below in a tall window) |
+| `:devtools` | Developer tools for this tab, docked inside the window (right, or below in a tall window) |
 
 In the vomnibar, `"<keyword> <terms>"` uses a search engine: `w tokyo` (Wikipedia), `aw pacman` (ArchWiki),
 `gh electron`, `y lofi`, `d …` (DuckDuckGo), `g …` (Google). `Shift+Enter` opens in a new tab.
@@ -81,7 +81,7 @@ In the vomnibar, `"<keyword> <terms>"` uses a search engine: `w tokyo` (Wikipedi
 }
 ```
 
-Command names for `map` are listed in `background/all_commands.js`. Ctrl mappings are rejected.
+Command names for `map` are listed in `background/all_commands.js`. Ctrl and function-key (F1-F12) mappings are rejected.
 History (`history.json`) and marks (`marks.json`) are kept in the same folder.
 
 ## Terminal

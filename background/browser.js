@@ -231,13 +231,6 @@ exports.toggleDevTools = (t = activeTab()) => {
   wc.once('devtools-closed', gone);
   dv.webContents.once('destroyed', gone);
   dv.webContents.on('render-process-gone', gone);
-  // The content script doesn't run inside DevTools: F12 there closes the panel too
-  dv.webContents.on('before-input-event', (e, input) => {
-    if (input.type === 'keyDown' && input.key === 'F12' && !input.control && !input.alt && !input.meta) {
-      e.preventDefault();
-      exports.toggleDevTools(t);
-    }
-  });
   if (t.id === store.activeId) store.win.contentView.addChildView(dv);
   exports.layout();
 };
