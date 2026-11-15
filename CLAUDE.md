@@ -77,6 +77,8 @@ not run on a real Arch machine.
 - Visual mode (select + copy only) is wanted in web pages (exists) and in PDFs too (Chromium's PDF viewer
   is a plugin the content script can't select in: needs a PDF.js-based viewer, pending user approval)
 - Nothing may open a separate window (popups, DevTools → tabs/panels)
+- Fail fast: Unitas starts only when every feature can work. `main.js` checks its libraries (node-pty is loaded,
+  page scripts must exist) and exits with the reason on stderr before any window. No partial startup, no error dialog
 - Few directories: only `background/` and `content/`; other files stay at the root
 - File and folder names are always kebab-case (`editor-buffer.js`, not `editor_buffer.js` or `editorBuffer.js`).
   All files follow it (renamed 2026-11-15). Exceptions: conventional names (`CLAUDE.md`, `README.md`, `PKGBUILD`).
