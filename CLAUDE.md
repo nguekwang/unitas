@@ -75,7 +75,8 @@ not run on a real Arch machine.
   with completions shown above it. No vomnibar overlay, no in-page find bar, no HUD (messages go to the bar).
   Tab strip stays at the top: tabs are fully detached floating rounded rectangles, without numbers.
 - Visual mode (select + copy only) is wanted in web pages (exists) and in PDFs too (Chromium's PDF viewer
-  is a plugin the content script can't select in: needs a PDF.js-based viewer, pending user approval) Nothing may open a separate window (popups, DevTools → tabs/panels)
+  is a plugin the content script can't select in: needs a PDF.js-based viewer, pending user approval)
+- Nothing may open a separate window (popups, DevTools → tabs/panels)
 - Few directories: only `background/` and `content/`; other files stay at the root
 - File and folder names are always kebab-case (`editor-buffer.js`, not `editor_buffer.js` or `editorBuffer.js`).
   All files follow it (renamed 2026-11-15). Exceptions: conventional names (`CLAUDE.md`, `README.md`, `PKGBUILD`).
