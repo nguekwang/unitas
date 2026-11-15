@@ -8,7 +8,8 @@ or a shell (typing in INSERT mode, Ctrl+C in a terminal) are not bindings and ar
 - QWERTY letter keys: `a`-`z`, and with Shift: `A`-`Z`
 - `,` `.` `/`, and with Shift: `<` `>` `?`
 - Enter, but as little as possible (only to confirm typed input)
-- Esc, only to leave a mode or cancel. In a terminal Esc belongs to the shell, so Shift+Esc leaves INSERT there
+- Esc, only to leave the current mode (back to NORMAL). Never bind it to anything else.
+  In a terminal Esc belongs to the shell, so Shift+Esc leaves INSERT there
 
 ## Forbidden
 - Ctrl, Alt, Super (Meta) in any combination
