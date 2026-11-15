@@ -3,7 +3,13 @@
 // terminal tab's own webContents may use them.
 const { ipcMain } = require('electron');
 const os = require('os');
-const pty = require('node-pty');
+// Loaded on first use: if node-pty is missing or failed to build, the rest of the app still starts and
+// the terminal tab says what to do
+let pty = null;
+const loadPty = () => {
+  if (!pty) pty = require('node-pty');
+  return pty;
+};
 const store = require('./store');
 const browser = require('./browser');
 
@@ -18,13 +24,22 @@ const size = n => Math.max(2, Math.min(1000, Number(n) | 0 || 80));
 function start(t, cols, rows) {
   const wc = t.view.webContents;
   const shell = process.env.SHELL || '/bin/bash';
-  const p = pty.spawn(shell, [], {
-    name: 'xterm-256color',
-    cols: size(cols),
-    rows: size(rows),
-    cwd: t.cwd || os.homedir(),
-    env: { ...process.env, TERM: 'xterm-256color', COLORTERM: 'truecolor', TERM_PROGRAM: 'unitas' }
-  });
+  let p;
+  try {
+    p = loadPty().spawn(shell, [], {
+      name: 'xterm-256color',
+      cols: size(cols),
+      rows: size(rows),
+      cwd: t.cwd || os.homedir(),
+      env: { ...process.env, TERM: 'xterm-256color', COLORTERM: 'truecolor', TERM_PROGRAM: 'unitas' }
+    });
+  } catch (e) {
+    const msg = /Cannot find module/.test(e.message)
+      ? 'node-pty is not installed: run `npm install` in the Unitas folder (needs base-devel and python).'
+      : 'The shell could not be started: ' + e.message;
+    if (!wc.isDestroyed()) wc.send('term:data', '\x1b[31m' + msg + '\x1b[0m\r\n');
+    return;
+  }
   shells.set(t.id, p);
 
   // Coalesce output a little: a burst (cat of a big file) becomes a few IPC messages, not thousands
