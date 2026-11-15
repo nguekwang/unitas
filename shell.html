@@ -16,18 +16,16 @@
   .tab.active { background:var(--active); }
   .tab .ic { font-size:12px; opacity:.8; }
   .tab .t { flex:1; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
-  .tab .x { width:18px; height:18px; line-height:18px; text-align:center; border-radius:4px; color:var(--dim); }
-  .tab .x:hover { background:#444; color:#fff; }
-  #plus { width:28px; height:28px; margin-bottom:2px; border:0; background:none; color:var(--dim); font-size:18px; border-radius:6px; }
-  #plus:hover { background:#3a3a3a; color:#fff; }
   #mode { flex:none; align-self:center; margin:0 8px; padding:3px 8px; border-radius:4px; background:var(--accent); color:#fff;
     font:600 11px ui-monospace, "JetBrains Mono", monospace; letter-spacing:.5px; }
   #mode.insert { background:#16a34a; }
+  #mode.visual { background:#d97706; }
+  #mode.other { background:#7c3aed; }
 </style>
 </head>
 <body>
 <div id="tabs"></div>
-<div id="mode" title="i: INSERT · Esc: NORMAL"></div>
+<div id="mode" title="? shows every key"></div>
 <script>
 const $ = id => document.getElementById(id);
 const ICON = { web:'🌐', pdf:'📕', html:'🧩', image:'🖼', editor:'📝', start:'✦' };
@@ -40,25 +38,20 @@ function render() {
     const d = document.createElement('div');
     d.className = 'tab' + (t.id === state.activeId ? ' active' : '');
     d.title = t.addr || t.title;
-    d.innerHTML = '<span class="ic"></span><span class="t"></span><span class="x">×</span>';
+    d.innerHTML = '<span class="ic"></span><span class="t"></span>';
     d.querySelector('.ic').textContent = ICON[t.kind] || '·';
     d.querySelector('.t').textContent = t.title;
     d.addEventListener('mousedown', e => {
-      if (e.button === 1) { shellApi.send('close', t.id); return; }
-      if (e.target.classList.contains('x')) return;
+      if (e.button === 1) { shellApi.send('close', t.id); return; } // middle click closes
       shellApi.send('activate', t.id);
     });
-    d.querySelector('.x').addEventListener('click', () => shellApi.send('close', t.id));
     el.appendChild(d);
   }
-  const plus = document.createElement('button');
-  plus.id = 'plus'; plus.textContent = '+'; plus.title = 'New tab (t)';
-  plus.onclick = () => shellApi.send('new-tab', '');
-  el.appendChild(plus);
 
   const m = $('mode');
   m.textContent = (state.mode || 'NORMAL') + (state.pending ? ' ' + state.pending : '');
-  m.classList.toggle('insert', state.mode === 'INSERT');
+  m.className = state.mode === 'INSERT' ? 'insert' : /^VISUAL/.test(state.mode || '') ? 'visual'
+    : (state.mode && state.mode !== 'NORMAL') ? 'other' : '';
 }
 
 shellApi.onTabs(s => { state = s; render(); });

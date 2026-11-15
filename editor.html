@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="en">
+<html lang="en" data-unitas-editor="1">
 <head>
 <meta charset="utf-8">
 <title>Editor</title>
@@ -127,7 +127,19 @@
     } else {
       model.onDidChangeContent(setTitle);
     }
-    editor.focus();
+
+    // Page commands from the content script (content/scroller.js, content/insert.js).
+    // The editor opens in NORMAL mode: "i" (or a click) puts the cursor in it.
+    addEventListener('unitas:editor-scroll', e => {
+      const d = JSON.parse(e.detail || '{}');
+      const y = d.axis !== 'x';
+      if (d.to) {
+        if (y) editor.setScrollTop(d.to === 'start' ? 0 : editor.getScrollHeight());
+        else editor.setScrollLeft(d.to === 'start' ? 0 : editor.getScrollWidth());
+      } else if (y) editor.setScrollTop(editor.getScrollTop() + (d.by || 0));
+      else editor.setScrollLeft(editor.getScrollLeft() + (d.by || 0));
+    });
+    addEventListener('unitas:editor-focus', () => editor.focus());
   });
 })();
 </script>

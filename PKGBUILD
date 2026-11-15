@@ -11,11 +11,12 @@ depends=('electron')
 makedepends=('npm')
 options=('!strip')
 
-_files=(main.js shell.html shell-preload.js editor.html editor-preload.js start.html package.json package-lock.json)
+_files=(main.js shell.html shell-preload.js editor.html editor-preload.js start.html
+        vomnibar.html vomnibar-preload.js ui.css background content package.json package-lock.json)
 
 prepare() {
   mkdir -p "$srcdir/$pkgname"
-  for f in "${_files[@]}"; do cp "$startdir/$f" "$srcdir/$pkgname/"; done
+  for f in "${_files[@]}"; do cp -r "$startdir/$f" "$srcdir/$pkgname/"; done
 }
 
 build() {

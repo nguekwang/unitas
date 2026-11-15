@@ -5,14 +5,70 @@ An "all-in-one tabbed app" built on Chromium (Electron) that runs on Arch Linux.
 It combines a browser, an editor, and PDF/MD/HTML viewers in one window, and also
 embeds **a UI/UX equivalent to the VS Code extension version of Claude Code, using the Claude Agent SDK**. It should handle IaC as well.
 
+## Handoff: where the last session stopped (2026-11-15)
+The previous session ran locally on the user's Arch machine (system `electron43`) and was stopped by the
+user at a convenient point to continue in remote Claude Code.
+
+**Do first: verify the DevTools close fix (written, NOT tested).**
+The user hit `TypeError: Cannot read properties of undefined (reading 'isDestroyed') at toggleDevTools` when
+the DevTools panel closed: the `devtools-closed` handler ran after the panel's view was already destroyed.
+Fixed in `background/browser.js` (one idempotent `closeDevTools(t)` that checks every object; `closeTab` uses
+it). Test every close path and watch the main process for uncaught exceptions: F12 twice, closing from inside
+DevTools (`wc.closeDevTools()`), `x` with the panel open, reload with the panel open, quitting with it open.
+
+**Verified this session** (driving Electron's real input path, see "Testing" below): NORMAL/INSERT switching
+(focus-based, `i`, Esc, autofocused fields), j/k/5j/d/G/gg scrolling (page, Monaco, PDF), unmapped keys reach
+the page, `f` / `F` hints (real clicks), `gi`, `/` + Enter, `v` + `y`, `yy`, `]]`, `H`, marks `ma` / `` `a ``,
+J/K direction, `t` / `x` / `X` (restores at the same position), vomnibar (`o`, history, Esc), `:q`, `:w`, `?`,
+`:settings` live reload (a `map` line applied without restart), popups as tabs with the content script and
+`window.opener` (login popup reports back), F12 / `:devtools` open + tab switching.
+
+**Not tested yet:** `V` line mode, `yt`, `<<` `>>`, `^`, `g0` `g$`, `gu` `gU`, `p` `P`, `ge` `gE`, `T`,
+`O` and Shift+Enter, `N`, global marks (A-Z), `yf`, search-engine keywords (`w tokyo`).
+
+**Open threads**
+- Question to the user, unanswered: Monaco's own Ctrl keys (Ctrl+Z, Ctrl+F) still work in the editor.
+  Block them too and use `u` (undo) / `/` (find) in NORMAL mode like vim?
+- Next feature the user asked for: integrated terminal tab (xterm.js + node-pty; node-pty must be built for
+  the Electron version in use).
+- Chrome extensions: skipped by the user for now (see below).
+
+**Testing recipe** (the harness scripts lived in a temp folder and are not in the repo)
+- Launch with `--inspect=9339 --remote-debugging-port=9333`. Connect to the main process inspector
+  (`http://127.0.0.1:9339/json/list`) and evaluate code there: `process.mainModule.require('./background/store')`
+  gives the tabs; `tab.view.webContents.sendInputEvent({type:'keyDown'|'char'|'keyUp', keyCode, modifiers})`
+  sends keys through the same path as a real keyboard (CDP `Input.dispatchKeyEvent` does not trigger the app's
+  key handling). Read the mode from `tab.mode` / `tab.pending`; check pages with `executeJavaScript`.
+- Serve test pages with `python3 -m http.server`. Smooth scrolling only animates while the window is visible.
+- Remote/cloud: there is no system Electron. Something like `npm i --no-save electron@43` and
+  `xvfb-run -a npx electron --no-sandbox .` should work (Xvfb needed; the Chromium sandbox usually can't run in a container).
+
+**User preferences learned this session**
+- Chats in Japanese, but everything in the repo (UI, code comments, docs, commits, PRs) is in English
+- No Ctrl shortcuts anywhere; nothing may open a separate window (popups, DevTools → tabs/panels)
+- Few directories: only `background/` and `content/`; other files stay at the root
+- j/k = scroll down/up; J = next tab, K = previous tab
+- Commit + push to `main` when asked; leave out `package.json`'s `claude` dependency, `bun.lock` and the
+  stray dotfiles in the repo root (`.bashrc`, `.zshrc`, `.mcp.json`, ...), which are not part of the app
+
 ## Current state (stage 1 done: confirmed to launch)
-- `main.js` … tab management with `WebContentsView`. Routes input to URL/PDF/HTML/image/MD-or-text
-- `shell.html` + `shell-preload.js` … tab strip (the back/forward/reload/address/open/edit toolbar was removed)
-- `palette.html` + `palette-preload.js` … search palette / command line (transparent overlay `WebContentsView`): tabs, commands, URL/search/file path, vim-style `:w` `:q` `:e` `:p` aliases
-- vi-style modes, app-wide (`main.js`): NORMAL (default; single keys control the app, printable keys are blocked from the page) / INSERT (keys go to the page, Esc returns). Mode badge in the tab strip. Clicking a text field enters INSERT (`before-mouse-event` + `document.activeElement` check)
-  - **No Ctrl shortcuts** (user rule). The application menu is removed (`Menu.setApplicationMenu(null)`) to drop Electron's default accelerators. Editor save/preview are `:w` / `:p` (sent to the editor over `editor:cmd`)
-  - Movement keys (hjkl, d/u, gg/G) are sent to the page as arrow/Page/Home/End keys via `sendInputEvent`
-- Popups never open a window: `setWindowOpenHandler` → `createWindow` wraps the popup's `webContents` in a tab, keeping `window.opener` (login popups work). Non-web tabs (editor/viewers) get a plain tab with `deny`, so the editor preload is never inherited
+- `main.js` … entry point; tabs are in `background/browser.js` (`WebContentsView`). Input routing: `background/normalize_urls.js`
+- `shell.html` + `shell-preload.js` … tab strip only (no toolbar, no +/× buttons)
+- **Vimium C-style keys, structured like Vimium C** (own code, not imported; Vimium C is Apache-2.0):
+  - `background/` = main process (browser.js tabs, key_mappings, all_commands, run_commands, run_keys, completion, ports, ...)
+  - `content/` = content script, concatenated at startup into `userData/preload/content.js` and registered with
+    `session.defaultSession.registerPreloadScript` (sandboxed preloads can't `require` local files). Runs in every top frame,
+    popups included; skips iframes, `shell.html`, `vomnibar.html`, and the PDF viewer
+  - Key differences from Vimium C (user's choice): `J` = next tab, `K` = previous tab
+  - Modes: NORMAL (only mapped keys are taken) / INSERT (focus-based, or `i`) / VISUAL / HINTS / FIND / MARK. Badge in the tab strip
+  - **No Ctrl shortcuts** (user rule): no app menu, Ctrl mappings rejected in settings. Editor save/preview: `:w` / `:p`
+  - j/k scroll (not arrow keys): scrollable-element search like Vimium C; Monaco via `unitas:editor-scroll` events;
+    PDF via the viewer frame's `viewer.viewport.setPosition` (background/run_keys.js)
+  - Find uses `webContents.findInPage`; link hints click with real `sendInputEvent` mouse events
+  - Settings: `~/.config/unitas/settings.json` (`:settings`), plus history.json, marks.json
+- Popups never open a window: `setWindowOpenHandler` → `createWindow` wraps the popup's `webContents` in a tab, keeping `window.opener` (login popups work). Non-web tabs (editor/viewers) get a plain tab with `deny`
+- DevTools: `F12` / `:devtools` → `browser.toggleDevTools`: the DevTools frontend is loaded into our own `WebContentsView` via `setDevToolsWebContents` and docked beside the page (no separate window)
+- Chrome extensions: tested LINE and Claude in Chrome (2026-11-15). Electron lacks sidePanel/debugger/tabGroups/nativeMessaging, so Claude in Chrome can't run; LINE might with `electron-chrome-extensions`. User chose to skip extensions for now
 - `editor.html` + `editor-preload.js` … Monaco (AMD, v0.52.2) + marked + DOMPurify. MD gets a left/right split live preview
 - `start.html` … new tab page
 - Confirmed launching on Electron 45 + Xvfb: Monaco (including workers), built-in PDF viewer, MD split, all shortcuts (even with focus inside the PDF viewer)
@@ -52,5 +108,7 @@ embeds **a UI/UX equivalent to the VS Code extension version of Claude Code, usi
 - To confirm (ask the user): is the IaC target "cloud/servers" or "configuration management of the Arch environment itself"?
 
 ## Principles
+- Keep it minimal, and keep the directory count small (user prefers few directories: `background/` + `content/` only).
+- Next candidate (user asked): integrated terminal tab (xterm.js + node-pty, needs a node-pty build for Electron 43).
 - Keep it minimal. Order: launch → PKGBUILD → Claude chat (read-only) → edit approval → IaC
 - User: Yoshi (chats in Japanese, uses Arch Linux, prefers workflows that can be completed from mobile; wants the app, code comments, docs and PRs in English)

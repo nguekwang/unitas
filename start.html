@@ -18,20 +18,19 @@
 <main>
   <h1>Unitas</h1>
   <p>Browser, editor, and PDF / MD / HTML viewer in one tabbed window.</p>
-  <p>Unitas has vi-style modes. <b>NORMAL</b> (the default): keys control the app. <b>INSERT</b>: keys go to the page. There are no Ctrl shortcuts.</p>
+  <p>Vimium-style keys. <b>NORMAL</b>: keys control the app. <b>INSERT</b> (in a text field, or after <kbd>i</kbd>): keys go to the page. <kbd>Esc</kbd> goes back. No Ctrl shortcuts. Press <kbd>?</kbd> for every key.</p>
   <table>
-    <tr><td><kbd>i</kbd> / <kbd>Esc</kbd></td><td>INSERT mode / back to NORMAL (clicking a text field also enters INSERT)</td></tr>
-    <tr><td><kbd>o</kbd></td><td>Search: tabs, commands, URLs, the web, file paths</td></tr>
-    <tr><td><kbd>O</kbd></td><td>Search, starting from the current address</td></tr>
-    <tr><td><kbd>:</kbd></td><td>Command: <kbd>:w</kbd> save, <kbd>:q</kbd> close tab, <kbd>:e</kbd> open file, <kbd>:p</kbd> Markdown preview</td></tr>
-    <tr><td><kbd>t</kbd> / <kbd>x</kbd></td><td>New tab / close tab</td></tr>
-    <tr><td><kbd>J</kbd> <kbd>K</kbd> · <kbd>gt</kbd> <kbd>gT</kbd></td><td>Next / previous tab</td></tr>
-    <tr><td><kbd>1</kbd>–<kbd>8</kbd> / <kbd>9</kbd></td><td>Go to that tab / the last tab</td></tr>
-    <tr><td><kbd>H</kbd> / <kbd>L</kbd></td><td>Back / forward</td></tr>
-    <tr><td><kbd>r</kbd></td><td>Reload</td></tr>
-    <tr><td><kbd>h</kbd> <kbd>j</kbd> <kbd>k</kbd> <kbd>l</kbd></td><td>Move / scroll</td></tr>
-    <tr><td><kbd>d</kbd> <kbd>u</kbd> · <kbd>gg</kbd> <kbd>G</kbd></td><td>Page down / up · top / bottom</td></tr>
-    <tr><td><kbd>e</kbd></td><td>Edit the file being viewed</td></tr>
+    <tr><td><kbd>o</kbd> / <kbd>O</kbd> / <kbd>T</kbd></td><td>Vomnibar: open URL, history, search / in a new tab / open tabs</td></tr>
+    <tr><td><kbd>:</kbd></td><td>Command line: <kbd>:w</kbd> save, <kbd>:q</kbd> close tab, <kbd>:e</kbd> open file, <kbd>:settings</kbd></td></tr>
+    <tr><td><kbd>j</kbd> <kbd>k</kbd> · <kbd>d</kbd> <kbd>u</kbd> · <kbd>gg</kbd> <kbd>G</kbd></td><td>Scroll down / up · half page · top / bottom</td></tr>
+    <tr><td><kbd>f</kbd> / <kbd>F</kbd> / <kbd>yf</kbd></td><td>Link hints: open / open in new tab / copy URL</td></tr>
+    <tr><td><kbd>/</kbd> <kbd>n</kbd> <kbd>N</kbd></td><td>Find / next / previous</td></tr>
+    <tr><td><kbd>v</kbd> / <kbd>V</kbd></td><td>Visual mode / line mode (<kbd>y</kbd> copies)</td></tr>
+    <tr><td><kbd>J</kbd> <kbd>K</kbd> · <kbd>t</kbd> <kbd>x</kbd> <kbd>X</kbd></td><td>Next / previous tab · new / close / restore tab</td></tr>
+    <tr><td><kbd>H</kbd> <kbd>L</kbd> · <kbd>r</kbd></td><td>Back / forward · reload</td></tr>
+    <tr><td><kbd>yy</kbd> · <kbd>p</kbd> <kbd>P</kbd></td><td>Copy URL · open the copied URL here / in a new tab</td></tr>
+    <tr><td><kbd>m</kbd>a · <kbd>`</kbd>a</td><td>Set / jump to a mark (A-Z: global)</td></tr>
+    <tr><td><kbd>F12</kbd></td><td>Developer tools (docked in the window)</td></tr>
   </table>
 </main>
 </body>

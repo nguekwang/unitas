@@ -1,6 +1,6 @@
 const { contextBridge, ipcRenderer } = require('electron');
 
-const SEND = new Set(['new-tab', 'activate', 'close']);
+const SEND = new Set(['activate', 'close']);
 
 contextBridge.exposeInMainWorld('shellApi', {
   send: (channel, ...args) => { if (SEND.has(channel)) ipcRenderer.send(channel, ...args); },

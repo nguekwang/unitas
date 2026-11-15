@@ -1,0 +1,58 @@
+/* UI drawn inside pages, in the content script's closed shadow root (content/dom_ui.js):
+   link hints, HUD, find bar, help dialog. Sent to each page by background/ui_css.js. */
+* { box-sizing: border-box; }
+:host, div, span, input, kbd, section, h3, b { font-family: -apple-system, "Segoe UI", "Hiragino Sans", "Noto Sans JP", sans-serif; }
+
+/* link hints */
+.hints { position: fixed; inset: 0; pointer-events: none; }
+.hint {
+  position: fixed; padding: 1px 4px; border-radius: 3px; white-space: nowrap;
+  font: 700 12px/1.25 ui-monospace, "JetBrains Mono", Menlo, monospace; text-transform: uppercase; letter-spacing: .5px;
+  color: #302505; background: linear-gradient(#fff785, #ffc542); border: 1px solid #c38a22;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, .35);
+}
+.hint .typed { color: #b8901f; }
+
+/* HUD */
+.hud {
+  position: fixed; right: 16px; bottom: 16px; max-width: 60vw; padding: 7px 12px; border-radius: 6px;
+  font-size: 13px; color: #e8e8e8; background: rgba(30, 30, 30, .94); border: 1px solid #3a3a3a;
+  box-shadow: 0 6px 20px rgba(0, 0, 0, .4); white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  opacity: 0; transform: translateY(6px); transition: opacity .12s, transform .12s;
+}
+.hud.on { opacity: 1; transform: none; }
+
+/* find bar */
+.find-bar {
+  position: fixed; left: 16px; bottom: 16px; display: flex; align-items: center; gap: 10px;
+  padding: 6px 12px; border-radius: 6px; pointer-events: auto;
+  background: rgba(30, 30, 30, .96); border: 1px solid #3b82f6; box-shadow: 0 6px 20px rgba(0, 0, 0, .4);
+}
+.find-bar::before { content: "/"; color: #8a8a8a; font: 14px ui-monospace, monospace; }
+.find-input {
+  width: 280px; border: 0; outline: none; background: none; color: #e8e8e8;
+  font: 14px ui-monospace, "JetBrains Mono", Menlo, monospace;
+}
+.find-count { color: #8a8a8a; font-size: 12px; white-space: nowrap; }
+
+/* help dialog */
+.help {
+  position: fixed; top: 6vh; left: 50%; transform: translateX(-50%); width: min(980px, calc(100vw - 32px));
+  max-height: 88vh; overflow: auto; padding: 18px 22px; border-radius: 12px; pointer-events: auto;
+  color: #d4d4d4; background: #252526; border: 1px solid #3a3a3a; box-shadow: 0 18px 56px rgba(0, 0, 0, .55);
+  font-size: 13px;
+}
+.help-head { display: flex; align-items: baseline; gap: 14px; margin-bottom: 8px; }
+.help-head b { font-size: 18px; color: #fff; }
+.help-head span { color: #8a8a8a; font-size: 12px; }
+.help-cols { columns: 2 420px; column-gap: 32px; }
+.help section { break-inside: avoid; margin-bottom: 14px; }
+.help h3 { margin: 10px 0 6px; font-size: 12px; font-weight: 600; color: #8a8a8a; text-transform: uppercase; letter-spacing: .6px; }
+.help-row { display: flex; gap: 12px; padding: 3px 0; }
+.help-keys { flex: 0 0 150px; text-align: right; }
+.help-desc { flex: 1; }
+.help kbd {
+  display: inline-block; margin-left: 4px; padding: 0 6px; border-radius: 4px; background: #333; color: #ffd866;
+  font: 12px/1.6 ui-monospace, "JetBrains Mono", Menlo, monospace;
+}
+.help kbd.alias { color: #9cdcfe; }
