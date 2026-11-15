@@ -62,10 +62,10 @@ not run on a real Arch machine.
 
 **User preferences learned this session**
 - Chats in Japanese, but everything in the repo (UI, code comments, docs, commits, PRs) is in English
-- **Key rule (2026-11-15):** every shortcut uses only unshifted QWERTY letter keys (a-z), `,` `.` `/`, and Enter
-  (Enter as little as possible). Never Esc, F1-F12, Delete, Ctrl, Alt, Super, or Shift (so no uppercase letters
-  and no shifted symbols like `?` `:` `^` `$` `<` `>`). The default keymap still breaks this rule: redesign pending
-  user approval. Nothing may open a separate window (popups, DevTools → tabs/panels)
+- **Key rule (2026-11-15):** every shortcut uses only QWERTY letter keys, `,` `.` `/`, Enter, and Shift with
+  those (so `J`, `G`, `?`, `<`, `>` are fine). Enter as little as possible. Never Esc, F1-F12, Delete, digits,
+  Ctrl, Alt or Super (so no `:` `^` `$` `` ` `` `[` `]`, no counts like `5j`). j/k stay scroll keys.
+  The default keymap still breaks this rule: redesign pending user approval. Nothing may open a separate window (popups, DevTools → tabs/panels)
 - Few directories: only `background/` and `content/`; other files stay at the root
 - File and folder names are always kebab-case (`editor-buffer.js`, not `editor_buffer.js` or `editorBuffer.js`).
   All files follow it (renamed 2026-11-15). Exceptions: conventional names (`CLAUDE.md`, `README.md`, `PKGBUILD`).
