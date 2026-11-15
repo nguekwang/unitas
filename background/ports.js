@@ -62,9 +62,23 @@ exports.init = () => {
   on('copy', (t, { text }) => { if (typeof text === 'string' && text.length < 1e6) clipboard.copy(text); });
   on('findQuery', (_t, { query }) => { store.findQuery = String(query || ''); });
   // Find mode uses Chromium's find-in-page: every match highlighted, page selection/focus untouched
-  on('find', (t, { query, forward, newSession }) => {
+  // times > 1 ("3n"): one step at a time, since a new request cancels one still running
+  on('find', async (t, { query, forward, newSession, times }) => {
     const q = String(query || '');
-    if (q) t.view.webContents.findInPage(q, { forward: forward !== false, findNext: !!newSession, matchCase: /[A-Z]/.test(q) });
+    if (!q) return;
+    const wc = t.view.webContents;
+    const n = Math.max(1, Math.min(999, Number(times) | 0 || 1));
+    const opts = { forward: forward !== false, matchCase: /[A-Z]/.test(q) };
+    for (let i = 0; i < n && !wc.isDestroyed(); i++) {
+      const done = i < n - 1 && new Promise(resolve => {
+        const timer = setTimeout(finish, 1000);
+        function finish() { clearTimeout(timer); wc.off('found-in-page', onResult); resolve(); }
+        function onResult(_e, r) { if (r.finalUpdate) finish(); }
+        wc.on('found-in-page', onResult);
+      });
+      wc.findInPage(q, { ...opts, findNext: !!newSession && i === 0 });
+      await done;
+    }
   });
   on('find:stop', (t, { action }) => {
     const ok = ['clearSelection', 'keepSelection', 'activateSelection'];

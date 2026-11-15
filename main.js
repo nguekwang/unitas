@@ -9,6 +9,7 @@ const ports = require('./background/ports');
 const vomnibar = require('./background/vomnibar');
 const contentBundle = require('./background/content_bundle');
 const history = require('./background/browsing_data_manager');
+const terminal = require('./background/terminal');
 
 // Present a plain Chrome UA: the default includes "unitas/x Electron/x", which
 // makes Google (and others) treat searches as bot traffic and show a CAPTCHA.
@@ -49,7 +50,9 @@ app.whenReady().then(() => {
   settings.watch();
   contentBundle.build();
   ports.init();
+  terminal.init();
   createWindow();
 });
 app.on('window-all-closed', () => app.quit());
 app.on('before-quit', () => history.flush());
+app.on('will-quit', () => terminal.killAll());

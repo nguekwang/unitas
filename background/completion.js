@@ -6,7 +6,7 @@ const keyMappings = require('./key_mappings');
 const { COMMANDS } = require('./all_commands');
 const { classify } = require('./normalize_urls');
 
-const ICON = { web: '🌐', pdf: '📕', html: '🧩', image: '🖼', editor: '📝', start: '✦' };
+const ICON = { web: '🌐', pdf: '📕', html: '🧩', image: '🖼', editor: '📝', terminal: '❯', start: '✦' };
 
 // Substring match ranks first (by position); otherwise a subsequence match ranked by gaps. -1 = no match.
 function score(q, text) {

@@ -20,6 +20,7 @@
   box-shadow: 0 6px 20px rgba(0, 0, 0, .4); white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
   opacity: 0; transform: translateY(6px); transition: opacity .12s, transform .12s;
 }
+.hud::before { content: attr(data-text); }
 .hud.on { opacity: 1; transform: none; }
 
 /* find bar */

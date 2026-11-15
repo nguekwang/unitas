@@ -34,6 +34,7 @@ const BACKGROUND = {
   toggleDevTools: (_c, t) => browser.toggleDevTools(t),
   openFile: () => browser.openDialog(),
   editFile: () => browser.editCurrent(),
+  openTerminal: (_c, t) => browser.openTerminal(t),
   saveFile: (_c, t) => editorCmd(t, 'save'),
   togglePreview: (_c, t) => editorCmd(t, 'preview'),
   openSettings: (_c, t) => browser.createTab(settings.file(), { edit: true, index: t ? require('./store').tabs.indexOf(t) + 1 : undefined })

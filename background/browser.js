@@ -1,5 +1,6 @@
 // Tab primitives: create, activate, close, layout (cf. Vimium C background/browser.ts, which wraps chrome.tabs).
 const { WebContentsView, dialog } = require('electron');
+const os = require('os');
 const path = require('path');
 const { pathToFileURL } = require('url');
 const store = require('./store');
@@ -9,6 +10,7 @@ const runKeys = require('./run_keys');
 
 const ROOT = path.join(__dirname, '..');
 const TOP = 36; // height of the tab strip (px)
+const PRELOAD = { editor: 'editor-preload.js', terminal: 'terminal-preload.js' };
 
 const activeTab = () => store.tabs.find(t => t.id === store.activeId);
 const tabOf = wc => store.tabs.find(t => !t.view.webContents.isDestroyed() && t.view.webContents === wc);
@@ -70,8 +72,9 @@ exports.activate = id => {
 // raw: what the user typed / a URL / a path.
 // opts.edit: open the file in the editor. opts.index: position in the tab strip.
 // opts.webContents + opts.openerId: a popup the page created (window.open / target=_blank).
+// opts.terminal: a terminal tab (raw is ignored), with its shell started in opts.cwd.
 exports.createTab = (raw, opts = {}) => {
-  const c = classify(raw);
+  const c = opts.terminal ? { kind: 'terminal' } : classify(raw);
   if (opts.edit && c.file) c.kind = 'editor';
   const id = store.nextId++;
   // Popups are wrapped as-is: Chromium already set them up with the opener link.
@@ -79,13 +82,15 @@ exports.createTab = (raw, opts = {}) => {
     webPreferences: {
       contextIsolation: true,
       sandbox: true,
-      // The content script comes from the session (content_bundle.js); editor tabs add file IO
-      preload: c.kind === 'editor' ? path.join(ROOT, 'editor-preload.js') : undefined
+      // The content script comes from the session (content_bundle.js); editor tabs add file IO,
+      // terminal tabs their shell's input and output
+      preload: PRELOAD[c.kind] ? path.join(ROOT, PRELOAD[c.kind]) : undefined
     }
   });
   const tab = {
     id, view, kind: c.kind, file: c.file || null, url: c.url || null, openerId: opts.openerId || null,
-    title: c.file ? path.basename(c.file) : (c.url || 'New Tab'), mode: 'NORMAL', pending: ''
+    title: c.kind === 'terminal' ? 'Terminal' : c.file ? path.basename(c.file) : (c.url || 'New Tab'),
+    cwd: opts.cwd || null, mode: 'NORMAL', pending: ''
   };
   const index = Number.isInteger(opts.index) ? Math.max(0, Math.min(opts.index, store.tabs.length)) : store.tabs.length;
   store.tabs.splice(index, 0, tab);
@@ -102,6 +107,14 @@ exports.createTab = (raw, opts = {}) => {
   };
   wc.on('did-navigate', navigated);
   wc.on('did-navigate-in-page', navigated);
+  // A page that failed to load (offline, DNS, TLS) shows Chromium's error page: keep its address
+  // anyway, so the tab strip, yy, gu and ge show what was asked for, not the previous page
+  wc.on('did-fail-load', (_e, code, _desc, url, isMainFrame) => {
+    if (!isMainFrame || code === -3 || tab.kind !== 'web') return; // -3: aborted (e.g. a new navigation)
+    tab.url = url;
+    tab.title = url;
+    exports.pushState();
+  });
   wc.on('found-in-page', (_e, r) => {
     if (r.finalUpdate) exports.sendToTab(tab, 'findResult', { active: r.activeMatchOrdinal, matches: r.matches });
   });
@@ -120,14 +133,16 @@ exports.createTab = (raw, opts = {}) => {
   wc.once('destroyed', () => {
     if (store.win && !store.win.isDestroyed() && store.tabs.includes(tab)) exports.closeTab(id, { destroyed: true });
   });
-  // The editor preload exposes file IO, so an editor tab must never navigate away (e.g. on drag & drop)
-  if (c.kind === 'editor') wc.on('will-navigate', e => e.preventDefault());
+  // The editor and terminal preloads expose file IO / a shell, so those tabs must never navigate away
+  // (e.g. on drag & drop)
+  if (PRELOAD[c.kind]) wc.on('will-navigate', e => e.preventDefault());
   // The PDF viewer is a plugin the content script can't see into: keys are handled here instead
   runKeys.attach(tab);
 
   if (opts.webContents) { /* the opener is already loading it */ }
   else if (c.kind === 'start') { tab.title = 'New Tab'; wc.loadFile(path.join(ROOT, 'start.html')); }
   else if (c.kind === 'editor') wc.loadFile(path.join(ROOT, 'editor.html'), { query: { file: c.file, url: pathToFileURL(c.file).href } });
+  else if (c.kind === 'terminal') wc.loadFile(path.join(ROOT, 'terminal.html'));
   else if (c.kind === 'web') wc.loadURL(c.url);
   else wc.loadURL(pathToFileURL(c.file).href); // pdf / html / image: Chromium built-in viewers
 
@@ -169,6 +184,12 @@ exports.openDialog = async () => {
   if (!r.canceled) r.filePaths.forEach(p => exports.createTab(p));
 };
 
+// A terminal in the folder of the file being viewed, else in the home folder
+exports.openTerminal = (t = activeTab(), opts = {}) => {
+  const cwd = (t && t.kind === 'terminal' && t.cwd) || (t && t.file && path.dirname(t.file)) || os.homedir();
+  return exports.createTab('', { terminal: true, cwd, index: t ? store.tabs.indexOf(t) + 1 : undefined, ...opts });
+};
+
 exports.editCurrent = () => {
   const t = activeTab();
   if (canEdit(t)) exports.createTab(t.file, { edit: true, index: store.tabs.indexOf(t) + 1 });
@@ -180,9 +201,10 @@ exports.editCurrent = () => {
 function closeDevTools(t) {
   const dv = t.devtools;
   if (!dv) return;
-  t.devtools = null; // first, so the devtools-closed event below finds nothing left to do
+  t.devtools = null; // first, so the handlers below find nothing left to do
   const wc = t.view.webContents;
-  if (wc && !wc.isDestroyed() && wc.isDevToolsOpened()) wc.closeDevTools();
+  // isDevToolsOpened() is always false with setDevToolsWebContents (Electron 43), so don't check it
+  if (wc && !wc.isDestroyed()) wc.closeDevTools();
   if (store.win && !store.win.isDestroyed()) store.win.contentView.removeChildView(dv);
   if (dv.webContents && !dv.webContents.isDestroyed()) dv.webContents.close();
 }
@@ -200,11 +222,21 @@ exports.toggleDevTools = (t = activeTab()) => {
   t.devtools = dv;
   wc.setDevToolsWebContents(dv.webContents);
   wc.openDevTools({ mode: 'detach', activate: false });
-  // closed from inside DevTools: drop the panel too
-  wc.once('devtools-closed', () => {
+  // The panel went away on its own (closed from inside DevTools, its renderer crashed): drop it too
+  const gone = () => {
     if (t.devtools !== dv) return; // already closed by us
     closeDevTools(t);
     exports.layout();
+  };
+  wc.once('devtools-closed', gone);
+  dv.webContents.once('destroyed', gone);
+  dv.webContents.on('render-process-gone', gone);
+  // The content script doesn't run inside DevTools: F12 there closes the panel too
+  dv.webContents.on('before-input-event', (e, input) => {
+    if (input.type === 'keyDown' && input.key === 'F12' && !input.control && !input.alt && !input.meta) {
+      e.preventDefault();
+      exports.toggleDevTools(t);
+    }
   });
   if (t.id === store.activeId) store.win.contentView.addChildView(dv);
   exports.layout();
@@ -216,7 +248,7 @@ exports.navigate = action => {
   const nh = t.view.webContents.navigationHistory;
   if (action === 'back' && nh.canGoBack()) nh.goBack();
   else if (action === 'forward' && nh.canGoForward()) nh.goForward();
-  else if (action === 'reload' && t.kind !== 'editor') t.view.webContents.reload();
+  else if (action === 'reload' && !PRELOAD[t.kind]) t.view.webContents.reload();
 };
 
 // Message the page's content script (content/port.js) or show a HUD message there

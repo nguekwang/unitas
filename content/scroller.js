@@ -1,6 +1,6 @@
 // Scrolling (cf. Vimium C content/scroller.ts). Scrolls the element the user last clicked in (or its
 // nearest scrollable ancestor), else the page, else the biggest visible scrollable element — so j/k
-// also work in app-like pages whose body never scrolls. In the editor tab it scrolls Monaco.
+// also work in app-like pages whose body never scrolls. In editor / terminal tabs it scrolls Monaco / xterm.js.
 const Scroller = (() => {
   let activated = null;
   let animating = null; // { el, axis, target, until }: keep adding to a smooth scroll in progress
@@ -43,7 +43,7 @@ const Scroller = (() => {
 
   // amount in px (positive: down / right). repeat: the key is held down → no smoothing
   function by(axis, amount, repeat = false) {
-    if (Utils.isEditorPage()) { Utils.toPage('unitas:editor-scroll', { axis, by: amount }); return; }
+    if (Utils.appPage()) { Utils.toPage('unitas:app-scroll', { axis, by: amount }); return; }
     const el = find(axis);
     const smooth = Settings.smoothScroll && !repeat;
     const now = performance.now();
@@ -55,7 +55,7 @@ const Scroller = (() => {
 
   // where: "start" | "end"
   function to(axis, where) {
-    if (Utils.isEditorPage()) { Utils.toPage('unitas:editor-scroll', { axis, to: where }); return; }
+    if (Utils.appPage()) { Utils.toPage('unitas:app-scroll', { axis, to: where }); return; }
     const el = find(axis);
     animating = null;
     const end = axis === 'y' ? el.scrollHeight : el.scrollWidth;

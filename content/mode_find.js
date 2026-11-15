@@ -33,7 +33,8 @@ const FindMode = (() => {
     Port.send('find:stop', { action });
   }
 
-  // accept: Enter keeps the match selected (ready for visual mode); Esc clears it
+  // accept: Enter ends the session with the match selected (ready for visual mode); n / N then start a
+  // new session from that selection, so they go to the next / previous match. Esc clears it.
   function exit(accept) {
     if (!bar) return;
     const q = input.value;
@@ -58,14 +59,15 @@ const FindMode = (() => {
     const q = last || await Port.invoke('findQuery');
     if (!q) { HUD.tip('Nothing to find yet: press / first'); return; }
     last = q;
-    for (let i = 0; i < times; i++) {
-      Port.send('find', { query: q, forward: !backwards, newSession: !sessionOpen });
-      sessionOpen = true;
-    }
+    Port.send('find', { query: q, forward: !backwards, newSession: !sessionOpen, times });
+    sessionOpen = true;
   }
 
   // Results from the main process: { active, matches }
+  // While the bar is open, Chromium also finds the query in the bar's own input (the last match in
+  // the page, as the bar is appended at the end): leave that one out.
   Port.on('findResult', ({ active, matches }) => {
+    if (bar && matches) { matches--; active = Math.min(active, matches); }
     const text = matches ? `${active} / ${matches}` : 'No matches';
     if (count) count.textContent = text;
     else HUD.tip(`/${last}  ${text}`);
