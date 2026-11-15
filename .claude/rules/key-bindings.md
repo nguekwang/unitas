@@ -14,7 +14,8 @@ or a shell (typing in INSERT mode, Ctrl+C in a terminal) are not bindings and ar
 - Ctrl, Alt, Super (Meta) in any combination
 - F1-F12, Delete
 - Digits, so no counts like `5j`
-- Any other symbol key (`:` `;` `^` `$` `` ` `` `'` `[` `]` `-` `=` ...), including their Shift variants
+- Brackets of any kind: `(` `)` `[` `]` `{` `}`
+- Any other symbol key (`:` `;` `^` `$` `` ` `` `'` `-` `=` ...), including their Shift variants
 - "Press twice quickly" gestures (double-tap Shift, `jk` typed fast, ...)
 
 ## Shape
