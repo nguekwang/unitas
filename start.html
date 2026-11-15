@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="ja">
+<html lang="en">
 <head>
 <meta charset="utf-8">
 <title>New Tab</title>
@@ -17,15 +17,21 @@
 <body>
 <main>
   <h1>Unitas</h1>
-  <p>ブラウザ・エディタ・PDF / MD / HTML ビューアを1つのタブ付きウィンドウで。</p>
+  <p>Browser, editor, and PDF / MD / HTML viewer in one tabbed window.</p>
+  <p>Unitas has vi-style modes. <b>NORMAL</b> (the default): keys control the app. <b>INSERT</b>: keys go to the page. There are no Ctrl shortcuts.</p>
   <table>
-    <tr><td><kbd>Ctrl</kbd>+<kbd>L</kbd></td><td>アドレスバー（URL・検索語・ファイルパス）</td></tr>
-    <tr><td><kbd>Ctrl</kbd>+<kbd>O</kbd></td><td>ファイルを開く（.pdf/.html は表示、.md などは編集）</td></tr>
-    <tr><td><kbd>Ctrl</kbd>+<kbd>E</kbd></td><td>表示中のファイルを編集</td></tr>
-    <tr><td><kbd>Ctrl</kbd>+<kbd>S</kbd></td><td>保存（エディタ）</td></tr>
-    <tr><td><kbd>Ctrl</kbd>+<kbd>P</kbd></td><td>MDプレビューの表示切替（エディタ）</td></tr>
-    <tr><td><kbd>Ctrl</kbd>+<kbd>T</kbd> / <kbd>W</kbd></td><td>タブを開く / 閉じる</td></tr>
-    <tr><td><kbd>Ctrl</kbd>+<kbd>Tab</kbd></td><td>タブ切替</td></tr>
+    <tr><td><kbd>i</kbd> / <kbd>Esc</kbd></td><td>INSERT mode / back to NORMAL (clicking a text field also enters INSERT)</td></tr>
+    <tr><td><kbd>o</kbd></td><td>Search: tabs, commands, URLs, the web, file paths</td></tr>
+    <tr><td><kbd>O</kbd></td><td>Search, starting from the current address</td></tr>
+    <tr><td><kbd>:</kbd></td><td>Command: <kbd>:w</kbd> save, <kbd>:q</kbd> close tab, <kbd>:e</kbd> open file, <kbd>:p</kbd> Markdown preview</td></tr>
+    <tr><td><kbd>t</kbd> / <kbd>x</kbd></td><td>New tab / close tab</td></tr>
+    <tr><td><kbd>J</kbd> <kbd>K</kbd> · <kbd>gt</kbd> <kbd>gT</kbd></td><td>Next / previous tab</td></tr>
+    <tr><td><kbd>1</kbd>–<kbd>8</kbd> / <kbd>9</kbd></td><td>Go to that tab / the last tab</td></tr>
+    <tr><td><kbd>H</kbd> / <kbd>L</kbd></td><td>Back / forward</td></tr>
+    <tr><td><kbd>r</kbd></td><td>Reload</td></tr>
+    <tr><td><kbd>h</kbd> <kbd>j</kbd> <kbd>k</kbd> <kbd>l</kbd></td><td>Move / scroll</td></tr>
+    <tr><td><kbd>d</kbd> <kbd>u</kbd> · <kbd>gg</kbd> <kbd>G</kbd></td><td>Page down / up · top / bottom</td></tr>
+    <tr><td><kbd>e</kbd></td><td>Edit the file being viewed</td></tr>
   </table>
 </main>
 </body>

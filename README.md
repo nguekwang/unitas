@@ -1,60 +1,77 @@
 # Unitas
 
-Chromium (Electron) 上で、ブラウザ・エディタ・PDF/MD/HTMLビューアを1つのタブ付きウィンドウにまとめたアプリ。
+A browser, editor, and PDF/MD/HTML viewer combined into one tabbed window, built on Chromium (Electron).
 
-## インストール（Arch Linux）
+## Install (Arch Linux)
 
 ```bash
-git clone -b claude/unitas-desktop-app-hy2ak6 https://github.com/nguekwang/unitas.git
+git clone https://github.com/nguekwang/unitas.git
 cd unitas
-makepkg -si               # システムの electron を使う。ビルド時に npm でライブラリを取得
+makepkg -si               # uses the system electron; npm fetches the libraries at build time
 unitas ./note.md
 ```
 
-## 開発時の起動
+## Running during development
 
 ```bash
-sudo pacman -S electron   # Electron 本体はシステム版を使う
+sudo pacman -S electron   # use the system Electron
 npm install
-npm start                 # 空のタブで起動
-npm start -- ./note.md    # ファイルを指定して起動
+npm start                 # start with an empty tab
+npm start -- ./note.md    # start with a file
 ```
 
-## タブの振り分け
+## How input is opened
 
-| 入力 | 開き方 |
+| Input | Opens as |
 |---|---|
-| `http(s)://…` / `example.com` | ブラウザ（Chromium） |
-| 検索語 | Google検索 |
-| `.pdf` | Chromium内蔵PDFビューア |
-| `.html` `.htm` | そのままHTML表示 |
-| 画像 | そのまま表示 |
-| `.md` | Monacoエディタ＋右側ライブプレビュー（分割） |
-| その他のテキスト | Monacoエディタ |
+| `http(s)://…` / `example.com` | Browser (Chromium) |
+| Search terms | Google search |
+| `.pdf` | Chromium's built-in PDF viewer |
+| `.html` `.htm` | Rendered HTML |
+| Images | Shown as-is |
+| `.md` | Monaco editor + live preview on the right (split) |
+| Other text | Monaco editor |
 
-## ショートカット
+## Modes and keys (vi-style, no Ctrl shortcuts)
 
-| キー | 動作 |
+Unitas starts in **NORMAL** mode: single keys control the app and never reach the page.
+In **INSERT** mode every key goes to the page. The current mode is shown at the right of the tab strip.
+
+| Key (NORMAL) | Action |
 |---|---|
-| Ctrl/Cmd+T / W | タブを開く / 閉じる |
-| Ctrl/Cmd+Tab | タブ切替 |
-| Ctrl/Cmd+L | アドレスバー |
-| Ctrl/Cmd+O | ファイルを開く |
-| Ctrl/Cmd+E | 表示中のファイル（PDF以外のHTML等）をエディタで開く |
-| Ctrl/Cmd+S | 保存（エディタ） |
-| Ctrl/Cmd+P | MDプレビュー切替（エディタ） |
-| Ctrl/Cmd+R | 再読み込み |
+| `i` / `Esc` | INSERT mode / back to NORMAL (clicking a text field also enters INSERT; clicking elsewhere returns to NORMAL) |
+| `o` | Search palette: tabs, commands, URLs, web search, file paths |
+| `O` | Search palette prefilled with the current address |
+| `:` | Command line: `:w` save, `:q` close tab, `:e` open file, `:p` Markdown preview, `:tabnew` |
+| `t` / `x` | New tab / close tab |
+| `J` `K` · `gt` `gT` | Next / previous tab |
+| `1`–`8` / `9` | Go to that tab / the last tab |
+| `H` / `L` | Back / forward |
+| `r` | Reload |
+| `h` `j` `k` `l` | Move / scroll (sent to the page as arrow keys, so they move the cursor in the editor) |
+| `d` `u` / `Space` · `gg` `G` | Page down / up · top / bottom |
+| `e` | Open the file being viewed (HTML etc., not PDF) in the editor |
 
-## 構成
+There is no application menu, so Electron's default Ctrl accelerators (reload, zoom, quit, ...) are gone too.
+Ctrl/Alt key combinations still reach the page untouched (copy/paste, Monaco's own editing keys).
 
-- `main.js` … タブ管理（`WebContentsView`）、種別判定、ショートカット、ファイルIO
-- `shell.html` / `shell-preload.js` … タブバー＋アドレスバーのUI
-- `editor.html` / `editor-preload.js` … Monaco＋MDプレビュー（marked＋DOMPurify）
-- `start.html` … 新規タブ
+## Popups open as tabs
 
-## 既知の制限（最小版）
+Pages never open a separate window. `window.open` popups (e.g. "Sign in with ..." login windows) and
+`target=_blank` links open as tabs in the same window. Web pages keep the opener link, so login popups can
+report back and close themselves; the tab then closes and the opening page comes back.
 
-- タブの並べ替え・ブックマーク・履歴UI・拡張機能は未対応
-- 外部でファイルが変更されても自動リロードしない
-- 未保存のままタブを閉じても確認しない
-- Electronは拡張機能の対応が限定的（uBlock等は別途対応が必要）
+## Layout
+
+- `main.js` … tab management (`WebContentsView`), input classification, NORMAL/INSERT modes, popups as tabs, file IO
+- `shell.html` / `shell-preload.js` … tab strip UI
+- `palette.html` / `palette-preload.js` … search palette / command line (overlay view)
+- `editor.html` / `editor-preload.js` … Monaco + Markdown preview (marked + DOMPurify)
+- `start.html` … new tab page
+
+## Known limitations (minimal version)
+
+- No tab reordering, bookmarks, history UI, or extensions
+- Files changed outside the app are not reloaded automatically
+- Closing a tab with unsaved changes does not ask for confirmation
+- Electron's extension support is limited (uBlock etc. would need separate work)

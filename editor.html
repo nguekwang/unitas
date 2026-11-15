@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="ja">
+<html lang="en">
 <head>
 <meta charset="utf-8">
 <title>Editor</title>
@@ -40,8 +40,8 @@
     <span id="fname"></span>
     <span id="lang"></span>
     <span class="sp"></span>
-    <span id="pvbtn" class="link" style="display:none">プレビュー (Ctrl+P)</span>
-    <span id="savebtn" class="link">保存 (Ctrl+S)</span>
+    <span id="pvbtn" class="link" style="display:none">Preview (:p)</span>
+    <span id="savebtn" class="link">Save (:w)</span>
   </div>
 </div>
 
@@ -60,7 +60,7 @@
 
   let text;
   try { text = await api.read(); }
-  catch (e) { document.getElementById('root').innerHTML = '<div id="msg">読み込めませんでした: ' + String(e.message || e) + '</div>'; return; }
+  catch (e) { document.getElementById('root').innerHTML = '<div id="msg">Could not load file: ' + String(e.message || e) + '</div>'; return; }
 
   self.MonacoEnvironment = {
     getWorkerUrl: () => 'data:text/javascript;charset=utf-8,' + encodeURIComponent(
@@ -89,10 +89,12 @@
     async function save() {
       const v = model.getValue();
       try { await api.write(v); saved = v; setTitle(); }
-      catch (e) { alert('保存できませんでした: ' + (e.message || e)); }
+      catch (e) { alert('Could not save file: ' + (e.message || e)); }
     }
     document.getElementById('savebtn').onclick = save;
-    editor.addCommand(monaco.KeyMod.CtrlCmd | monaco.KeyCode.KeyS, save);
+    let togglePreview = () => {};
+    // Save / preview come from the app's :w / :p commands (there are no Ctrl shortcuts)
+    api.onCommand(name => { if (name === 'save') save(); else if (name === 'preview') togglePreview(); });
 
     // --- markdown preview ---
     if (isMd) {
@@ -109,7 +111,7 @@
       };
       const toggle = () => { preview.classList.toggle('on'); if (preview.classList.contains('on')) render(); };
       pvbtn.onclick = toggle;
-      editor.addCommand(monaco.KeyMod.CtrlCmd | monaco.KeyCode.KeyP, toggle);
+      togglePreview = toggle;
       model.onDidChangeContent(() => {
         setTitle();
         if (!preview.classList.contains('on')) return;

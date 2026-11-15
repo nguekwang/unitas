@@ -1,49 +1,56 @@
-# Unitas — Claude Code 引き継ぎメモ
+# Unitas — Claude Code handoff notes
 
-## ゴール
-Arch Linux 上で動く、Chromium(Electron) ベースの「全部入りタブアプリ」。
-ブラウザ / エディタ / PDF・MD・HTML ビューアを1ウィンドウに統合し、さらに
-**Claude Agent SDK で VS Code 拡張版 Claude Code と同等の UI/UX** を組み込む。IaC も扱えるようにする。
+## Goal
+An "all-in-one tabbed app" built on Chromium (Electron) that runs on Arch Linux.
+It combines a browser, an editor, and PDF/MD/HTML viewers in one window, and also
+embeds **a UI/UX equivalent to the VS Code extension version of Claude Code, using the Claude Agent SDK**. It should handle IaC as well.
 
-## 現状（段階1完了: 起動確認済み）
-- `main.js` … `WebContentsView` でタブ管理。入力を URL/PDF/HTML/画像/MD・テキストに振り分け
-- `shell.html` + `shell-preload.js` … タブバー・アドレスバー
-- `editor.html` + `editor-preload.js` … Monaco (AMD, v0.52.2) + marked + DOMPurify。MD は左右分割ライブプレビュー
-- `start.html` … 新規タブ
-- Electron 45 + Xvfb で起動確認済み: Monaco(ワーカー含む)、内蔵PDFビューア、MD分割、全ショートカット（PDFビューア内フォーカス時も）
-- 注意点（ハマりどころ）:
-  - marked / DOMPurify は Monaco の `loader.js` より**前**に読む（後だと AMD モジュールとして登録されグローバルが無くなる）
-  - `file:read/write` は呼び出し元 editor タブ自身のファイルに限定（パス引数なし）。editor タブは `will-navigate` を禁止
-  - 許可フォルダ（プロジェクトフォルダ）は段階3で Claude 用に導入予定
+## Current state (stage 1 done: confirmed to launch)
+- `main.js` … tab management with `WebContentsView`. Routes input to URL/PDF/HTML/image/MD-or-text
+- `shell.html` + `shell-preload.js` … tab strip (the back/forward/reload/address/open/edit toolbar was removed)
+- `palette.html` + `palette-preload.js` … search palette / command line (transparent overlay `WebContentsView`): tabs, commands, URL/search/file path, vim-style `:w` `:q` `:e` `:p` aliases
+- vi-style modes, app-wide (`main.js`): NORMAL (default; single keys control the app, printable keys are blocked from the page) / INSERT (keys go to the page, Esc returns). Mode badge in the tab strip. Clicking a text field enters INSERT (`before-mouse-event` + `document.activeElement` check)
+  - **No Ctrl shortcuts** (user rule). The application menu is removed (`Menu.setApplicationMenu(null)`) to drop Electron's default accelerators. Editor save/preview are `:w` / `:p` (sent to the editor over `editor:cmd`)
+  - Movement keys (hjkl, d/u, gg/G) are sent to the page as arrow/Page/Home/End keys via `sendInputEvent`
+- Popups never open a window: `setWindowOpenHandler` → `createWindow` wraps the popup's `webContents` in a tab, keeping `window.opener` (login popups work). Non-web tabs (editor/viewers) get a plain tab with `deny`, so the editor preload is never inherited
+- `editor.html` + `editor-preload.js` … Monaco (AMD, v0.52.2) + marked + DOMPurify. MD gets a left/right split live preview
+- `start.html` … new tab page
+- Confirmed launching on Electron 45 + Xvfb: Monaco (including workers), built-in PDF viewer, MD split, all shortcuts (even with focus inside the PDF viewer)
+- Gotchas:
+  - Load marked / DOMPurify **before** Monaco's `loader.js` (loaded after, they register as AMD modules and the globals disappear)
+  - `file:read/write` is limited to the calling editor tab's own file (no path argument). Editor tabs block `will-navigate`
+  - An allowed folder (project folder) is planned for stage 3, for Claude
+  - The default user agent is stripped of `unitas/x` and `Electron/x` (otherwise Google shows a bot CAPTCHA)
 
-## 次のタスク
+## Next tasks
 
-### 1. PKGBUILD（Arch）— 作成済み・Arch 実機での makepkg/namcap 未確認
-- `PKGBUILD` はリポジトリ直下。ローカルのチェックアウトから `$startdir` 経由でビルドする
-- Monaco は `min/` だけ使うので `dev/ esm/ min-maps/` は削除（103MB → 17MB）
-- 引数処理は Arch の electron ランチャーがフラグをアプリパスより前に入れても動くようにした（`process.defaultApp`）
-- システムの `electron` パッケージに依存させる（Electron本体を同梱しない）
-  - `depends=('electron')`、`makedepends=('npm')`
-  - アプリ本体を `/usr/lib/unitas/` に置き、`npm install --omit=dev` した `node_modules` ごと入れる
-  - `/usr/bin/unitas` ランチャー: `exec electron /usr/lib/unitas "$@"`
-  - `/usr/share/applications/unitas.desktop` とアイコン
-- `makepkg -si` と `namcap` で確認。`devDependencies` の `electron` は package.json から外す（システム版を使うため）
+### 1. PKGBUILD (Arch) — written; makepkg/namcap not yet verified on a real Arch machine
+- `PKGBUILD` is at the repo root. It builds from the local checkout via `$startdir`
+- Only Monaco's `min/` is used, so `dev/ esm/ min-maps/` are deleted (103MB → 17MB)
+- Argument handling works even when Arch's electron launcher puts flags before the app path (`process.defaultApp`)
+- Depend on the system `electron` package (don't bundle Electron)
+  - `depends=('electron')`, `makedepends=('npm')`
+  - Put the app in `/usr/lib/unitas/`, together with `node_modules` from `npm install --omit=dev`
+  - `/usr/bin/unitas` launcher: `exec electron /usr/lib/unitas "$@"`
+  - `/usr/share/applications/unitas.desktop` and an icon
+- Verify with `makepkg -si` and `namcap`. Remove the `electron` devDependency from package.json (the system one is used)
+- Note: the dev machine has `electron39/42/43` but no plain `electron`; run with `electron43 .` for now
 
-### 2. Claude Code 統合（Agent SDK）
-- main プロセスで `@anthropic-ai/claude-agent-sdk` の `query()` を使い、ストリームを IPC でレンダラへ流す
-- UI は VS Code 版 Claude Code に寄せる: 右サイドバーのチャット、ツール呼び出し表示、
-  ファイル編集は **Monaco の diff エディタ** で承認/却下、`@ファイル` メンション、現在開いているファイル/選択範囲をコンテキストに渡す、権限プロンプト
-- 認証: `claude setup-token` で発行したトークンを環境変数 `CLAUDE_CODE_OAUTH_TOKEN` として SDK に渡す。
-  保存は Electron `safeStorage`（Linux では libsecret/kwallet）。平文で設定ファイルに置かない
-  - 注意: サブスクのOAuthトークンは個人利用向け。他人に配布するなら API キー(`ANTHROPIC_API_KEY`)方式にする（要・最新の利用規約確認）
-- エージェントの `cwd` は開いているプロジェクトフォルダ。ファイルIOは main 側で許可パスを制限する
+### 2. Claude Code integration (Agent SDK)
+- In the main process, use `query()` from `@anthropic-ai/claude-agent-sdk` and stream the results to the renderer over IPC
+- Match the UI to Claude Code for VS Code: chat in a right sidebar, tool call display,
+  file edits approved/rejected in **Monaco's diff editor**, `@file` mentions, pass the current file/selection as context, permission prompts
+- Auth: pass a token issued by `claude setup-token` to the SDK as the `CLAUDE_CODE_OAUTH_TOKEN` environment variable.
+  Store it with Electron `safeStorage` (libsecret/kwallet on Linux). Never put it in a config file in plain text
+  - Note: subscription OAuth tokens are for personal use. If distributing to others, switch to an API key (`ANTHROPIC_API_KEY`) (check the latest terms of use)
+- The agent's `cwd` is the open project folder. File IO is restricted to allowed paths on the main side
 
-### 3. IaC 対応
-- Monaco: Terraform/OpenTofu(HCL)、YAML(Ansible/K8s)、Pulumi(TS/Python) のシンタックス・スキーマ補完
-- 統合ターミナル（xterm.js + node-pty）で `tofu plan` / `ansible-playbook --check` を実行
-- AI フロー: Claude が IaC を生成/修正 → **plan/diff を必ず UI に表示** → ユーザー承認後にのみ apply。apply 系コマンドは自動承認しない
-- 要確認（ユーザーに聞く）: IaC の対象は「クラウド/サーバ」か「Arch 環境自体の構成管理」か
+### 3. IaC support
+- Monaco: syntax and schema completion for Terraform/OpenTofu (HCL), YAML (Ansible/K8s), Pulumi (TS/Python)
+- Integrated terminal (xterm.js + node-pty) to run `tofu plan` / `ansible-playbook --check`
+- AI flow: Claude generates/edits IaC → **always show the plan/diff in the UI** → apply only after user approval. Never auto-approve apply commands
+- To confirm (ask the user): is the IaC target "cloud/servers" or "configuration management of the Arch environment itself"?
 
-## 方針メモ
-- 最小構成を保つ。まず起動 → PKGBUILD → Claude チャット（読み取り専用）→ 編集承認 → IaC の順
-- ユーザー: Yoshi（日本語で会話、Arch Linux 使用、モバイルでも完結できるワークフローを好む）
+## Principles
+- Keep it minimal. Order: launch → PKGBUILD → Claude chat (read-only) → edit approval → IaC
+- User: Yoshi (chats in Japanese, uses Arch Linux, prefers workflows that can be completed from mobile; wants the app, code comments, docs and PRs in English)
