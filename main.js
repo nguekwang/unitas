@@ -9,6 +9,7 @@ const ports = require('./background/ports');
 const vomnibar = require('./background/vomnibar');
 const contentBundle = require('./background/content_bundle');
 const history = require('./background/browsing_data_manager');
+const security = require('./background/security');
 
 // Present a plain Chrome UA: the default includes "unitas/x Electron/x", which
 // makes Google (and others) treat searches as bot traffic and show a CAPTCHA.
@@ -45,6 +46,7 @@ function createWindow() {
 }
 
 app.whenReady().then(() => {
+  security.init();
   settings.load();
   settings.watch();
   contentBundle.build();

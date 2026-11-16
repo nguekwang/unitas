@@ -72,6 +72,12 @@ J/K direction, `t` / `x` / `X` (restores at the same position), vomnibar (`o`, h
 - `editor.html` + `editor-preload.js` … Monaco (AMD, v0.52.2) + marked + DOMPurify. MD gets a left/right split live preview
 - `start.html` … new tab page
 - Confirmed launching on Electron 45 + Xvfb: Monaco (including workers), built-in PDF viewer, MD split, all shortcuts (even with focus inside the PDF viewer)
+- Security (`background/security.js`, 2026-11-16): permission requests are denied except fullscreen and clipboard writes
+  (Electron grants everything by default). file:// requests are filtered with webRequest because the system electron's
+  `GrantFileProtocolExtraPrivileges` fuse can't be turned off: pages may open files as pages; Unitas's own files load;
+  a local file's tab may load css/js/images/fonts/media from its own folder and below (no dot entries); fetch/XHR and
+  iframes of local files are refused. Remaining audit items (P2: CSP, in-tab permission prompt, downloads, shell guards):
+  see the security report doc in the project
 - Gotchas:
   - Load marked / DOMPurify **before** Monaco's `loader.js` (loaded after, they register as AMD modules and the globals disappear)
   - `file:read/write` is limited to the calling editor tab's own file (no path argument). Editor tabs block `will-navigate`
