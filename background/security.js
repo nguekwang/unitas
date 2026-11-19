@@ -7,7 +7,7 @@
 //    fuse), so a local HTML file can fetch() any other local file (~/.ssh, ~/.config/unitas, ...) and
 //    send it out. Unitas runs on the system electron, whose fuses can't be flipped, so file:// requests
 //    are filtered with webRequest instead.
-const { session } = require('electron');
+const { app, session } = require('electron');
 const os = require('os');
 const path = require('path');
 const { fileURLToPath } = require('url');
@@ -59,4 +59,18 @@ exports.init = (ses = session.defaultSession) => {
     if (!ok) console.warn(`blocked local file request (${details.resourceType}): ${details.url}`);
     callback({ cancel: !ok });
   });
+
+  // No <webview> anywhere: Unitas never uses it, and a page that managed to add one would get a guest
+  // with its own webPreferences
+  app.on('web-contents-created', (_e, wc) => {
+    wc.on('will-attach-webview', ev => ev.preventDefault());
+  });
+};
+
+// Unitas's own UI pages (tab strip, vomnibar) carry a preload API, so they must never load anything else:
+// a link dropped on the tab strip would otherwise replace it with a web page. They open no popups either.
+exports.lockAppView = wc => {
+  wc.on('will-navigate', e => e.preventDefault());
+  wc.on('will-redirect', e => e.preventDefault());
+  wc.setWindowOpenHandler(() => ({ action: 'deny' }));
 };

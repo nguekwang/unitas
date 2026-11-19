@@ -76,7 +76,8 @@ J/K direction, `t` / `x` / `X` (restores at the same position), vomnibar (`o`, h
   (Electron grants everything by default). file:// requests are filtered with webRequest because the system electron's
   `GrantFileProtocolExtraPrivileges` fuse can't be turned off: pages may open files as pages; Unitas's own files load;
   a local file's tab may load css/js/images/fonts/media from its own folder and below (no dot entries); fetch/XHR and
-  iframes of local files are refused. Remaining audit items (P2: CSP, in-tab permission prompt, downloads, shell guards):
+  iframes of local files are refused. `<webview>` is refused everywhere; the tab strip and vomnibar can't navigate or open
+  popups (`lockAppView`); `activate`/`close` IPC is accepted only from the tab strip. Remaining audit items (P2: CSP, in-tab permission prompt, downloads):
   see the security report doc in the project
 - Gotchas:
   - Load marked / DOMPurify **before** Monaco's `loader.js` (loaded after, they register as AMD modules and the globals disappear)

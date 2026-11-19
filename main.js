@@ -20,9 +20,10 @@ app.userAgentFallback = app.userAgentFallback
 // No application menu: it would bring Electron's default Ctrl accelerators (reload, zoom, quit, ...)
 Menu.setApplicationMenu(null);
 
-// tab strip (shell.html)
-ipcMain.on('activate', (_e, id) => browser.activate(id));
-ipcMain.on('close', (_e, id) => browser.closeTab(id));
+// tab strip (shell.html): only the tab strip itself may send these
+const fromShell = e => e.sender === store.shellWC;
+ipcMain.on('activate', (e, id) => { if (fromShell(e)) browser.activate(id); });
+ipcMain.on('close', (e, id) => { if (fromShell(e)) browser.closeTab(id); });
 
 function createWindow() {
   const win = new BrowserWindow({
@@ -34,6 +35,7 @@ function createWindow() {
   });
   store.win = win;
   store.shellWC = win.webContents;
+  security.lockAppView(win.webContents);
   vomnibar.create();
   for (const ev of ['resize', 'maximize', 'unmaximize', 'enter-full-screen', 'leave-full-screen']) win.on(ev, browser.layout);
   win.webContents.loadFile(path.join(__dirname, 'shell.html'));
