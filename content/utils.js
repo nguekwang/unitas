@@ -9,8 +9,9 @@ const Settings = {
 
 const Utils = {
   clamp: (n, lo, hi) => Math.max(lo, Math.min(hi, n)),
-  // The editor tab marks its <html> so page commands can talk to Monaco instead of the DOM
-  isEditorPage: () => !!(document.documentElement && document.documentElement.dataset.unitasEditor === '1'),
+  // Unitas's own tab pages mark their <html> (data-unitas-app="editor" | "terminal") so page commands
+  // can talk to Monaco / xterm.js instead of the DOM. null for every other page.
+  appPage: () => (document.documentElement && document.documentElement.dataset.unitasApp) || null,
   // Events cross from this isolated world to the page's main world; pass data as JSON text
   // because objects created here aren't readable there.
   toPage: (type, detail) => dispatchEvent(new CustomEvent(type, { detail: detail === undefined ? null : JSON.stringify(detail) }))

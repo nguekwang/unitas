@@ -10,22 +10,22 @@ const path = require('path');
 const ROOT = path.join(__dirname, '..');
 const ORDER = [
   'content/utils.js',
-  'content/keyboard_utils.js',
-  'content/dom_utils.js',
+  'content/keyboard-utils.js',
+  'content/dom-utils.js',
   'content/port.js',
-  'content/dom_ui.js',
+  'content/dom-ui.js',
   'content/hud.js',
   'content/insert.js',
   'content/scroller.js',
-  'content/local_links.js',
-  'content/link_actions.js',
-  'content/link_hints.js',
-  'content/mode_find.js',
+  'content/local-links.js',
+  'content/link-actions.js',
+  'content/link-hints.js',
+  'content/mode-find.js',
   'content/visual.js',
   'content/marks.js',
-  'content/help_dialog.js',
+  'content/help-dialog.js',
   'content/commands.js',
-  'content/key_handler.js',
+  'content/key-handler.js',
   'content/frontend.js'
 ];
 
@@ -33,7 +33,7 @@ exports.build = () => {
   const read = f => fs.readFileSync(path.join(ROOT, f), 'utf8');
   const body = ORDER.map(f => `// ---- ${f} ----\n${read(f)}`).join('\n');
   // Not in: iframes (the top page handles keys), the tab strip and vomnibar (Unitas's own UI),
-  // DevTools, and the PDF viewer (its keys are handled in background/run_keys.js).
+  // DevTools, and the PDF viewer (its keys are handled in background/run-keys.js).
   const skip = `if (window.top !== window || document.contentType === 'application/pdf' || location.protocol === 'devtools:' ||
     (location.protocol === 'file:' && /\\/(shell|vomnibar)\\.html$/.test(location.pathname))) return;`;
   // `module`/`exports` are shadowed: these files are browser code

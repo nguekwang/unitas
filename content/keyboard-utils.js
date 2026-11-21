@@ -1,5 +1,6 @@
 // Keyboard events → Vimium-style key names (cf. Vimium C lib/keyboard_utils.ts).
-//   "j", "J", "?", "<space>", "<esc>", "<enter>", "<a-j>", "<c-j>", "<s-tab>", "<f1>"
+//   "j", "J", "?", "<space>", "<esc>", "<enter>", "<a-j>", "<c-j>", "<s-tab>"
+// Function keys (F1-F12) are never bound, so they get no name and always go to the page.
 const KeyboardUtils = (() => {
   const NAMED = {
     ' ': 'space', Escape: 'esc', Enter: 'enter', Tab: 'tab', Backspace: 'backspace', Delete: 'delete',
@@ -17,7 +18,7 @@ const KeyboardUtils = (() => {
       // Shift is already part of the character ("J", "?")
       return mods ? `<${mods}${k.toLowerCase() === k ? k : k.toLowerCase()}>` : k;
     }
-    const name = NAMED[k] || (/^F\d{1,2}$/.test(k) ? k.toLowerCase() : null);
+    const name = NAMED[k] || null;
     if (!name) return null;
     return `<${mods}${ev.shiftKey ? 's-' : ''}${name}>`;
   }
