@@ -15,7 +15,7 @@ unitas ./note.md
 
 ```bash
 sudo pacman -S electron   # use the system Electron
-npm install
+npm install              # builds node-pty (needs base-devel and python)
 npm start                 # start with an empty tab
 npm start -- ./note.md    # start with a file
 ```
@@ -59,7 +59,8 @@ The mode is shown at the right of the tab strip. Press `?` for every key. Counts
 | `yy` · `p` `P` | Copy the URL · open the copied URL here / in a new tab |
 | `gu` `gU` | Go up the URL / to its root |
 | `e` | Edit the file being viewed (HTML etc.) |
-| `F12` / `:devtools` | Developer tools for this tab, docked inside the window (right, or below in a tall window) |
+| `:term` | Terminal tab (see below) |
+| `:devtools` | Developer tools for this tab, docked inside the window (right, or below in a tall window) |
 
 In the vomnibar, `"<keyword> <terms>"` uses a search engine: `w tokyo` (Wikipedia), `aw pacman` (ArchWiki),
 `gh electron`, `y lofi`, `d …` (DuckDuckGo), `g …` (Google). `Shift+Enter` opens in a new tab.
@@ -80,8 +81,17 @@ In the vomnibar, `"<keyword> <terms>"` uses a search engine: `w tokyo` (Wikipedi
 }
 ```
 
-Command names for `map` are listed in `background/all_commands.js`. Ctrl mappings are rejected.
+Command names for `map` are listed in `background/all-commands.js`. Ctrl and function-key (F1-F12) mappings are rejected.
 History (`history.json`) and marks (`marks.json`) are kept in the same folder.
+
+## Terminal
+
+`:term` opens a terminal tab (xterm.js + node-pty) running `$SHELL`, in the folder of the file being viewed
+(else the home folder). It starts in **INSERT** mode, so every key goes to the shell, Ctrl keys included.
+In a terminal `Esc` also goes to the shell (vim, less, fzf need it): **`Shift+Esc`** returns to NORMAL mode,
+where `j` `k` `d` `u` `gg` `G` scroll the scrollback, `J` `K` switch tabs, and `i` (or a click) goes back
+to the shell. `yt` opens another shell in the same folder. `exit` closes the tab; closing the tab ends the
+shell. Map a key with `map <keys> openTerminal`.
 
 ## Popups open as tabs
 
@@ -95,18 +105,19 @@ The structure follows Vimium C: a background part (main process) and a content p
 
 - `main.js` … entry point: window, app lifecycle
 - `background/` … main process (Vimium C `background/`)
-  - `browser.js` tabs · `store.js` shared state · `all_commands.js` commands · `key_mappings.js` default keys + map/unmap
-  - `run_commands.js` runs commands · `run_keys.js` keys in the PDF viewer · `tab_commands.js` · `open_urls.js`
-  - `completion.js` vomnibar suggestions · `normalize_urls.js` typed text → URL/file/search
-  - `browsing_data_manager.js` history · `tools.js` marks · `clipboard.js` · `settings.js` · `ports.js` IPC
-  - `vomnibar.js` · `help_dialog.js` · `ui_css.js` · `content_bundle.js` builds and registers the content script
+  - `browser.js` tabs · `store.js` shared state · `all-commands.js` commands · `key-mappings.js` default keys + map/unmap
+  - `run-commands.js` runs commands · `run-keys.js` keys in the PDF viewer · `tab-commands.js` · `open-urls.js`
+  - `completion.js` vomnibar suggestions · `normalize-urls.js` typed text → URL/file/search
+  - `browsing-data-manager.js` history · `tools.js` marks · `clipboard.js` · `settings.js` · `ports.js` IPC
+  - `terminal.js` shells for terminal tabs · `vomnibar.js` · `help-dialog.js` · `ui-css.js` · `content-bundle.js` builds and registers the content script
 - `content/` … content script, run in every page in an isolated world (Vimium C `content/` + `lib/`)
-  - `key_handler.js` modes and key sequences · `insert.js` · `scroller.js` · `link_hints.js` · `local_links.js` · `link_actions.js`
-  - `mode_find.js` · `visual.js` · `marks.js` · `hud.js` · `dom_ui.js` · `help_dialog.js` · `commands.js` · `port.js` · `frontend.js`
-  - `utils.js` · `keyboard_utils.js` · `dom_utils.js`
+  - `key-handler.js` modes and key sequences · `insert.js` · `scroller.js` · `link-hints.js` · `local-links.js` · `link-actions.js`
+  - `mode-find.js` · `visual.js` · `marks.js` · `hud.js` · `dom-ui.js` · `help-dialog.js` · `commands.js` · `port.js` · `frontend.js`
+  - `utils.js` · `keyboard-utils.js` · `dom-utils.js`
 - `shell.html` / `shell-preload.js` … tab strip + mode badge
 - `vomnibar.html` / `vomnibar-preload.js` … the vomnibar overlay
 - `editor.html` / `editor-preload.js` … Monaco + Markdown preview (marked + DOMPurify)
+- `terminal.html` / `terminal-preload.js` … terminal tab (xterm.js); its shell runs in `background/terminal.js` (node-pty)
 - `start.html` … new tab page · `ui.css` … hints / HUD / find bar / help styles
 
 ## Known limitations (minimal version)

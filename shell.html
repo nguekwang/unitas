@@ -16,7 +16,11 @@
   .tab.active { background:var(--active); }
   .tab .ic { font-size:12px; opacity:.8; }
   .tab .t { flex:1; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
-  #mode { flex:none; align-self:center; margin:0 8px; padding:3px 8px; border-radius:4px; background:var(--accent); color:#fff;
+  /* Fixed sizes: the mode badge and the pending keys never change the layout, whatever is typed */
+  #pending { flex:none; align-self:center; width:56px; margin-left:8px; text-align:right; overflow:hidden; white-space:nowrap;
+    color:var(--dim); font:600 11px ui-monospace, "JetBrains Mono", monospace; }
+  #mode { flex:none; align-self:center; box-sizing:border-box; width:104px; text-align:center; overflow:hidden; white-space:nowrap;
+    margin:0 8px; padding:3px 8px; border-radius:4px; background:var(--accent); color:#fff;
     font:600 11px ui-monospace, "JetBrains Mono", monospace; letter-spacing:.5px; }
   #mode.insert { background:#16a34a; }
   #mode.visual { background:#d97706; }
@@ -25,10 +29,11 @@
 </head>
 <body>
 <div id="tabs"></div>
+<div id="pending"></div>
 <div id="mode" title="? shows every key"></div>
 <script>
 const $ = id => document.getElementById(id);
-const ICON = { web:'🌐', pdf:'📕', html:'🧩', image:'🖼', editor:'📝', start:'✦' };
+const ICON = { web:'🌐', pdf:'📕', html:'🧩', image:'🖼', editor:'📝', terminal:'❯', start:'✦' };
 let state = { tabs: [], activeId: null };
 
 function render() {
@@ -49,7 +54,8 @@ function render() {
   }
 
   const m = $('mode');
-  m.textContent = (state.mode || 'NORMAL') + (state.pending ? ' ' + state.pending : '');
+  m.textContent = state.mode || 'NORMAL';
+  $('pending').textContent = state.pending || '';
   m.className = state.mode === 'INSERT' ? 'insert' : /^VISUAL/.test(state.mode || '') ? 'visual'
     : (state.mode && state.mode !== 'NORMAL') ? 'other' : '';
 }

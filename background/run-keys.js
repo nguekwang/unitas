@@ -1,7 +1,7 @@
 // Key handling done in the main process (cf. Vimium C background/run_keys.ts).
 // Only used for PDF tabs: Chromium's PDF viewer is a plugin, so keys typed into it never reach the
 // content script. Here they are matched against the same key mappings via before-input-event.
-const keyMappings = require('./key_mappings');
+const keyMappings = require('./key-mappings');
 const settings = require('./settings');
 
 const NAMED = {
@@ -14,7 +14,6 @@ const tokenOf = input => {
   if (!k) return null;
   if (k.length === 1) return k === ' ' ? '<space>' : k;
   if (NAMED[k]) return `<${input.shift ? 's-' : ''}${NAMED[k]}>`;
-  if (/^F\d+$/.test(k)) return `<${k.toLowerCase()}>`;
   return null;
 };
 const startsWith = (keys, seq) => seq.every((k, i) => keys[i] === k);
@@ -50,7 +49,7 @@ exports.attach = tab => {
     if (exact && matches.length === 1) {
       const n = parseInt(count || '1', 10);
       pending = []; count = ''; report();
-      require('./run_commands').run(exact.command, n, tab);
+      require('./run-commands').run(exact.command, n, tab);
       return;
     }
     pending = seq;

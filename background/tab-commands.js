@@ -20,6 +20,8 @@ exports.createTab = count => { for (let i = 0; i < count; i++) browser.createTab
 exports.duplicateTab = (count, t) => {
   const addr = browser.addrOf(t);
   for (let i = 0; i < count; i++) {
+    // a terminal duplicates as a new shell in the same folder
+    if (t.kind === 'terminal') { browser.openTerminal(t, { background: i < count - 1 }); continue; }
     browser.createTab(addr, { edit: t.kind === 'editor', index: indexOf(t) + 1, background: i < count - 1 });
   }
 };

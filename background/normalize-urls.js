@@ -23,7 +23,8 @@ exports.classify = raw => {
       return { kind: VIEW_EXT[ext] || 'editor', file: abs };
     }
   } catch { /* not a file */ }
-  if (/^localhost(:\d+)?(\/.*)?$/i.test(input)) return { kind: 'web', url: 'http://' + input };
+  // localhost and IP addresses (often dev servers without TLS) → http, like Chrome
+  if (/^(localhost|\d{1,3}(\.\d{1,3}){3}|\[[0-9a-f:]+\])(:\d+)?([/?#].*)?$/i.test(input)) return { kind: 'web', url: 'http://' + input };
   if (!/\s/.test(input) && /\.[a-z]{2,}(:\d+)?(\/.*)?$/i.test(input)) return { kind: 'web', url: 'https://' + input };
   // "w tokyo" → the "w" search engine
   const m = input.match(/^(\S+)\s+(.+)$/);
