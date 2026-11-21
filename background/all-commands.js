@@ -1,5 +1,5 @@
 // Every command a key can be mapped to (cf. Vimium C background/all_commands.ts).
-// where: "content" runs inside the page (content/commands.js), "background" runs here (run_commands.js).
+// where: "content" runs inside the page (content/commands.js), "background" runs here (run-commands.js).
 // alias: names accepted on the ":" command line (":w", ":q", ...).
 
 exports.GROUPS = {
@@ -73,6 +73,7 @@ exports.COMMANDS = {
   editFile: c('Edit the file being viewed', 'files', 'background', ['edit']),
   saveFile: c('Save the file (editor)', 'files', 'background', ['w', 'save']),
   togglePreview: c('Toggle Markdown preview (editor)', 'files', 'background', ['p', 'preview']),
+  openTerminal: c("Open a terminal (in the current file's folder)", 'files', 'background', ['term', 'terminal']),
   openSettings: c('Edit settings: key mappings, search engines, hint characters', 'files', 'background', ['settings', 'set']),
 
   toggleDevTools: c('Open / close the developer tools for this tab', 'misc', 'background', ['devtools', 'dev']),

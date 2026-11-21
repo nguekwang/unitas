@@ -68,7 +68,9 @@ const KeyHandler = (() => {
     if (HelpDialog.isOpen() && (key === '<esc>' || key === '?')) { consume(ev); HelpDialog.hide(); return; }
     if (VisualMode.mode()) { if (VisualMode.onKey(key)) consume(ev); return; }
     if (InsertMode.active()) {
-      if (key === '<esc>') { consume(ev); InsertMode.exit(); }
+      // In a terminal Esc belongs to the shell (vim, less, fzf ...): Shift+Esc leaves insert mode there
+      const leave = Utils.appPage() === 'terminal' ? '<s-esc>' : '<esc>';
+      if (key === leave) { consume(ev); InsertMode.exit(); }
       return;
     }
 

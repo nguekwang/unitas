@@ -1,6 +1,6 @@
 // Data for the help dialog ("?"), built from the current key mappings (cf. Vimium C background/help_dialog.ts).
-const { GROUPS, COMMANDS } = require('./all_commands');
-const keyMappings = require('./key_mappings');
+const { GROUPS, COMMANDS } = require('./all-commands');
+const keyMappings = require('./key-mappings');
 
 exports.data = () => Object.entries(GROUPS).map(([group, title]) => ({
   title,

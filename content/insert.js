@@ -11,7 +11,7 @@ const InsertMode = (() => {
   const active = () => explicit || DomUtils.isEditable(focused());
 
   function enter() {
-    if (Utils.isEditorPage()) { Utils.toPage('unitas:editor-focus'); return; } // focusing Monaco → insert
+    if (Utils.appPage()) { Utils.toPage('unitas:app-focus'); return; } // focusing Monaco / xterm → insert
     explicit = true;
     HUD.show('Insert mode · Esc to leave');
     KeyHandler.report();

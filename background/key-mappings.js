@@ -1,8 +1,8 @@
 // Default key mappings plus the user's map/unmap lines (cf. Vimium C background/key_mappings.ts).
-const { COMMANDS } = require('./all_commands');
+const { COMMANDS } = require('./all-commands');
 const settings = require('./settings');
 
-// Vimium C's defaults, minus every Ctrl mapping (Unitas has no Ctrl shortcuts), plus ":" and "e".
+// Vimium C's defaults, minus every Ctrl mapping (Unitas has no Ctrl or function-key shortcuts), plus ":" and "e".
 // One deliberate difference: J = next tab, K = previous tab (Vimium C has them the other way round).
 const DEFAULT_KEYS = {
   '?': 'showHelp',
@@ -26,8 +26,7 @@ const DEFAULT_KEYS = {
   g0: 'firstTab', 'g$': 'lastTab', '^': 'visitPreviousTab',
   t: 'createTab', yt: 'duplicateTab', x: 'removeTab', X: 'restoreTab',
   '<<': 'moveTabLeft', '>>': 'moveTabRight',
-  e: 'editFile',
-  '<f12>': 'toggleDevTools'
+  e: 'editFile'
 };
 
 // "gg" → ["g","g"], "<space>j" → ["<space>","j"], "<<" → ["<","<"]
@@ -35,6 +34,8 @@ const tokenize = keys => String(keys).match(/<[a-z0-9]+(?:-[a-z0-9$]+)*>|./giu) 
 exports.tokenize = tokenize;
 
 const isCtrl = tokens => tokens.some(t => /^<(?:[ams]-)*c-/i.test(t));
+// Function keys (F1-F12) are never bound either (user rule)
+const isFn = tokens => tokens.some(t => /^<(?:[acms]-)*f\d{1,2}>$/i.test(t));
 
 let current = null;
 
@@ -50,6 +51,7 @@ exports.build = () => {
     if (cmd === 'map' && keys && name) {
       if (!Object.hasOwn(COMMANDS, name)) { errors.push(`unknown command: ${name}`); continue; }
       if (isCtrl(tokenize(keys))) { errors.push(`Ctrl mappings are not allowed: ${keys}`); continue; }
+      if (isFn(tokenize(keys))) { errors.push(`Function-key mappings are not allowed: ${keys}`); continue; }
       map[keys] = name;
       continue;
     }

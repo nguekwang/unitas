@@ -1,0 +1,53 @@
+<!doctype html>
+<html lang="en" data-unitas-app="terminal">
+<head>
+<meta charset="utf-8">
+<title>Terminal</title>
+<!-- Terminal tab: xterm.js drawing a shell that runs in the main process (background/terminal.js) -->
+<link rel="stylesheet" href="./node_modules/@xterm/xterm/css/xterm.css">
+<style>
+  html, body { margin:0; height:100%; overflow:hidden; background:#1e1e1e; }
+  #term { position:absolute; inset:6px 0 0 10px; }
+</style>
+</head>
+<body>
+<div id="term"></div>
+<script src="./node_modules/@xterm/xterm/lib/xterm.js"></script>
+<script src="./node_modules/@xterm/addon-fit/lib/addon-fit.js"></script>
+<script>
+(() => {
+  const el = document.getElementById('term');
+  const term = new Terminal({
+    fontFamily: '"JetBrains Mono", "Noto Sans Mono", "DejaVu Sans Mono", ui-monospace, monospace',
+    fontSize: 13,
+    cursorBlink: true,
+    scrollback: 10000,
+    theme: { background: '#1e1e1e', foreground: '#d4d4d4', cursor: '#d4d4d4', selectionBackground: '#264f78' }
+  });
+  const fit = new FitAddon.FitAddon();
+  term.loadAddon(fit);
+  term.open(el);
+  fit.fit();
+
+  term.onData(d => termApi.input(d));
+  term.onResize(({ cols, rows }) => termApi.resize(cols, rows));
+  term.onTitleChange(t => { document.title = t || 'Terminal'; });
+  termApi.onData(d => term.write(d));
+  new ResizeObserver(() => fit.fit()).observe(el);
+  termApi.start(term.cols, term.rows);
+  // A new terminal is ready to type in (INSERT mode); Shift+Esc goes back to NORMAL mode
+  term.focus();
+
+  // Page commands from the content script (content/scroller.js, content/insert.js)
+  addEventListener('unitas:app-scroll', e => {
+    const d = JSON.parse(e.detail || '{}');
+    if (d.axis === 'x') return;
+    if (d.to) { if (d.to === 'start') term.scrollToTop(); else term.scrollToBottom(); return; }
+    const lineHeight = el.clientHeight / term.rows || 16;
+    term.scrollLines(Math.round((d.by || 0) / lineHeight) || Math.sign(d.by || 0));
+  });
+  addEventListener('unitas:app-focus', () => term.focus());
+})();
+</script>
+</body>
+</html>

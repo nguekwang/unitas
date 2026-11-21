@@ -1,5 +1,5 @@
 // Commands that run inside the page (cf. Vimium C content/commands.ts). Each gets (count, keyEvent?).
-// The rest (tabs, URLs, vomnibar, ...) run in the main process: background/run_commands.js.
+// The rest (tabs, URLs, vomnibar, ...) run in the main process: background/run-commands.js.
 const Commands = (() => {
   const step = count => Settings.scrollStepSize * count;
   const half = count => Math.round(innerHeight / 2) * count;
