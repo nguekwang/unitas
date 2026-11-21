@@ -9,6 +9,7 @@ const ports = require('./background/ports');
 const vomnibar = require('./background/vomnibar');
 const contentBundle = require('./background/content_bundle');
 const history = require('./background/browsing_data_manager');
+const security = require('./background/security');
 
 // Present a plain Chrome UA: the default includes "unitas/x Electron/x", which
 // makes Google (and others) treat searches as bot traffic and show a CAPTCHA.
@@ -19,9 +20,10 @@ app.userAgentFallback = app.userAgentFallback
 // No application menu: it would bring Electron's default Ctrl accelerators (reload, zoom, quit, ...)
 Menu.setApplicationMenu(null);
 
-// tab strip (shell.html)
-ipcMain.on('activate', (_e, id) => browser.activate(id));
-ipcMain.on('close', (_e, id) => browser.closeTab(id));
+// tab strip (shell.html): only the tab strip itself may send these
+const fromShell = e => e.sender === store.shellWC;
+ipcMain.on('activate', (e, id) => { if (fromShell(e)) browser.activate(id); });
+ipcMain.on('close', (e, id) => { if (fromShell(e)) browser.closeTab(id); });
 
 function createWindow() {
   const win = new BrowserWindow({
@@ -33,6 +35,7 @@ function createWindow() {
   });
   store.win = win;
   store.shellWC = win.webContents;
+  security.lockAppView(win.webContents);
   vomnibar.create();
   for (const ev of ['resize', 'maximize', 'unmaximize', 'enter-full-screen', 'leave-full-screen']) win.on(ev, browser.layout);
   win.webContents.loadFile(path.join(__dirname, 'shell.html'));
@@ -45,6 +48,7 @@ function createWindow() {
 }
 
 app.whenReady().then(() => {
+  security.init();
   settings.load();
   settings.watch();
   contentBundle.build();

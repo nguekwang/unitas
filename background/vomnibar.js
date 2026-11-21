@@ -13,7 +13,7 @@ exports.create = () => {
     webPreferences: { contextIsolation: true, sandbox: true, preload: path.join(ROOT, 'vomnibar-preload.js') }
   });
   v.setBackgroundColor('#00000000');
-  v.webContents.on('will-navigate', e => e.preventDefault());
+  require('./security').lockAppView(v.webContents);
   v.webContents.loadFile(path.join(ROOT, 'vomnibar.html'));
   store.vomnibar = v;
 
